@@ -105,10 +105,9 @@ export default function Home({ token, refreshTokenString, host, vinyl }) {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="h-[20px] w-[20px] bg-green-500 rounded-full"></div>
               </div>
-              <div className="h-[100px] w-[100px] rounded-full bg-black flex items-center justify-center animate-spin-slow">
-                <div className="h-[60px] w-[60px] bg-white rounded-full flex items-center justify-center">
-                  <Image src="/spotify-logo.png" width={40} height={40} alt="Spotify Logo" />
-                </div>
+              <div className="relative flex items-center justify-center overflow-hidden bg-black rounded-full animate-spin-slow">
+                <div className="absolute w-[38%] h-[38%] bg-green-500 rounded-full" />
+                  <Image src={albumCover} width={500} height={500} className="rounded-full" alt="Album Cover" />
               </div>
             </div>
           ) : (
@@ -157,7 +156,7 @@ export async function getServerSideProps(context) {
       props: {
         token: access_token,
         refreshTokenA: context.query.refreshToken,
-        host,
+        host: host || null,
         vinyl,
       },
     };
