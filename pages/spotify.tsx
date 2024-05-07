@@ -10,7 +10,8 @@ import { fetchSpotifyAccessToken, refreshToken } from '../utils/spotify';
 
 // anonymous async func
 
-export default function Home({ token, refreshTokenString, host }: { token: string, refreshTokenString: string, host: string }) {
+export default function Home({ token, refreshTokenString, host, vinyl }) {
+
   async function fetchWebApi(endpoint, method, body) {
 
     // fetch from localstorage, print first 5 chars and then overwite existing token object
@@ -99,9 +100,22 @@ export default function Home({ token, refreshTokenString, host }: { token: strin
       <div>
         <div className='flex p-2 '>
 
-          <div className='h-[100px] w-[100px]'>
-            <Image src={albumCover} width={500} height={500} className="rounded-[1rem]" alt="Album Cover" />
-          </div>
+        {vinyl ? (
+            <div className="relative h-[100px] w-[100px]">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-[20px] w-[20px] bg-green-500 rounded-full"></div>
+              </div>
+              <div className="h-[100px] w-[100px] rounded-full bg-black flex items-center justify-center animate-spin-slow">
+                <div className="h-[60px] w-[60px] bg-white rounded-full flex items-center justify-center">
+                  <Image src="/spotify-logo.png" width={40} height={40} alt="Spotify Logo" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="h-[100px] w-[100px]">
+              <Image src={albumCover} width={500} height={500} className="rounded-[1rem]" alt="Album Cover" />
+            </div>
+          )}
           <div className='flex flex-col -mt-4'>
 
             <h1 className='text-[3rem] font-extrabold flex my-auto ml-4'>
@@ -133,27 +147,23 @@ export default function Home({ token, refreshTokenString, host }: { token: strin
   )
 }
 
-
-
-// server side props
 export async function getServerSideProps(context) {
-  // get paramshost
-  const host = process.env.HOST
-  const access_token = context.query.token
+  const host = process.env.HOST;
+  const access_token = context.query.token;
+  const vinyl = context.query.vinyl === 'true';
 
   if (access_token) {
     return {
       props: {
         token: access_token,
         refreshTokenA: context.query.refreshToken,
-        host
+        host,
+        vinyl,
       },
     };
   }
 
   return {
-    props: {
-
-    }
-  }
+    props: {},
+  };
 }
