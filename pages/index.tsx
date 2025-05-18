@@ -2,19 +2,34 @@ import Image from 'next/image';
 import { Inter } from 'next/font/google';
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { useForm } from 'react-hook-form';
+import { useForm, FieldValues } from 'react-hook-form';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { fetchSpotifyAccessToken, refreshToken } from '../utils/spotify';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import type { GetServerSidePropsContext } from 'next';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export default function Home({ host, token, refreshTokenA }) {
-  const { register, handleSubmit, watch, formState: { errors } } = useForm({
+interface HomeProps {
+  host?: string | null;
+  token?: string | null;
+  refreshTokenA?: string | null;
+}
+
+interface FormData extends FieldValues {
+  type: 'pomodoro' | 'spotify' | 'local' | null;
+  workingTime?: string;
+  restTime?: string;
+}
+
+export default function Home({ host, token, refreshTokenA }: HomeProps) {
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     defaultValues: {
       type: token ? 'spotify' : null,
+      workingTime: '',
+      restTime: '',
     },
   });
 
@@ -35,7 +50,7 @@ export default function Home({ host, token, refreshTokenA }) {
     NotificationManager.success('Link has been copied. You can now paste it in OBS!', 'Success! Woo!');
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: FormData) => {
     console.log(data);
     const { type, workingTime, restTime } = data;
     const timeNow = new Date().getTime();
@@ -237,11 +252,17 @@ export default function Home({ host, token, refreshTokenA }) {
                       !type ? 'hover:cursor-not-allowed' : 'test'
                     } mt-4 w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
                     onClick={() => {
+                      if (typeof host !== 'string') {
+                        // Optionally, show an error message to the user or log this case
+                        console.error("Host is not configured, cannot initiate Spotify login.");
+                        NotificationManager.error("Configuration error: Cannot connect to Spotify.", "Error");
+                        return;
+                      }
                       let params = new URLSearchParams({
                         response_type: 'code',
                         client_id: 'fb31251099ec4a96a54f36d223ceb448',
                         scope: 'user-read-currently-playing',
-                        redirect_uri: host,
+                        redirect_uri: host, // host is now guaranteed to be a string here
                       });
 
                       const url = `https://accounts.spotify.com/authorize?${params.toString()}`;
@@ -263,22 +284,23 @@ export default function Home({ host, token, refreshTokenA }) {
 }
 
 // Server-side props
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const host = process.env.HOST;
 
   // Check if code param exists
-  const code = context.query.code;
-  const access_token = context.query.access_token;
+  const code = typeof context.query.code === 'string' ? context.query.code : undefined;
+  const access_token = typeof context.query.access_token === 'string' ? context.query.access_token : undefined;
+  const refresh_token_query = typeof context.query.refresh_token === 'string' ? context.query.refresh_token : undefined;
 
-  if (code) {
+  if (code && host) {
     const data = await fetchSpotifyAccessToken(code, host);
 
     const accessToken = data.access_token;
-    const refreshToken = data.refresh_token;
+    const refreshTokenVal = data.refresh_token;
 
     // Redirect to /?access_token=accessToken&refresh_token=refreshToken
     context.res.writeHead(302, {
-      Location: `/?access_token=${accessToken}&refresh_token=${refreshToken}`,
+      Location: `/?access_token=${accessToken}&refresh_token=${refreshTokenVal}`,
     });
     context.res.end();
 
@@ -291,8 +313,8 @@ export async function getServerSideProps(context) {
     return {
       props: {
         token: access_token,
-        refreshTokenA: context.query.refresh_token,
-        host,
+        refreshTokenA: refresh_token_query,
+        host: host || null,
       },
     };
   }
