@@ -113,6 +113,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
     return () => clearInterval(interval);
   }, [isLoading]);
 
+  // Handle timer transitions when time runs out
   useEffect(() => {
     if (state.isPaused || isLoading) return;
 
@@ -141,6 +142,61 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
       updateWidgetState(newState);
     }
   }, [state, isLoading, calculateTimeLeft, workTime, breakTime, goal, updateWidgetState]);
+
+  // Check for missed transitions on load (when widget was closed)
+  useEffect(() => {
+    if (isLoading || state.isPaused) return;
+
+    const checkMissedTransitions = () => {
+      const elapsed = Date.now() - state.lastActionTime;
+      const timeLeft = Math.max(0, state.lastActionTimeLeft - elapsed);
+
+      // If the timer has run out while the page was closed, auto-transition
+      if (timeLeft === 0 && state.lastActionTimeLeft > 0) {
+        let currentIsWorking = state.isWorking;
+        let currentTime = state.lastActionTime;
+        let currentTimeLeft = state.lastActionTimeLeft;
+        let pomodorosCompleted = state.pomodorosCompleted;
+
+        // Calculate how many transitions we need to make
+        let totalElapsed = elapsed;
+        while (totalElapsed >= currentTimeLeft) {
+          totalElapsed -= currentTimeLeft;
+
+          // Complete current phase
+          if (currentIsWorking) {
+            pomodorosCompleted++;
+          }
+
+          // Switch to next phase
+          currentIsWorking = !currentIsWorking;
+          currentTimeLeft = currentIsWorking ? workTime : breakTime;
+        }
+
+        // Set up the final state
+        const now = Date.now();
+        const finalTimeLeft = currentTimeLeft - totalElapsed;
+
+        const newState = {
+          isWorking: currentIsWorking,
+          isPaused: false,
+          lastActionTime: now,
+          lastActionTimeLeft: finalTimeLeft,
+          pomodorosCompleted,
+        };
+
+        setState(newState);
+        updateWidgetState(newState);
+
+        if (goal && pomodorosCompleted >= goal && pomodorosCompleted > state.pomodorosCompleted) {
+          setShowCelebration(true);
+          setTimeout(() => setShowCelebration(false), 5000);
+        }
+      }
+    };
+
+    checkMissedTransitions();
+  }, [isLoading, state.isPaused, state.isWorking, state.lastActionTime, state.lastActionTimeLeft, state.pomodorosCompleted, workTime, breakTime, goal, updateWidgetState]);
 
   const timeLeft = calculateTimeLeft();
   const minutes = Math.floor(timeLeft / 60000);
