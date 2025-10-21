@@ -30,6 +30,25 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const supabase = createClient();
 
+  // Load Google Fonts for the font picker
+  useEffect(() => {
+    const fonts = [
+      'Inter:wght@400;600;700',
+      'Poppins:wght@400;600;700;900',
+      'Space+Grotesk:wght@300;400;500;600',
+      'Outfit:wght@400;600;700;800;900',
+      'Roboto:wght@400;500;700',
+      'Montserrat:wght@400;600;700',
+      'Playfair+Display:wght@400;600;700',
+      'Raleway:wght@400;600;700'
+    ];
+
+    const link = document.createElement('link');
+    link.href = `https://fonts.googleapis.com/css2?${fonts.map(f => `family=${f}`).join('&')}&display=swap`;
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+  }, []);
+
   // Build preview URL with current config for instant updates
   const getPreviewUrl = () => {
     const baseUrl = `${host}/widget?widgetId=${widget.id}`;
@@ -150,6 +169,29 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
       });
     } catch (error) {
       console.error('Failed to skip stage:', error);
+    }
+  };
+
+  const adjustPomodoroCount = async (adjustment: number) => {
+    if (!widgetState || widget.type !== 'pomodoro') return;
+
+    const newCount = Math.max(0, (widgetState.pomodorosCompleted || 0) + adjustment);
+
+    // Optimistically update
+    setWidgetState(prev => ({
+      ...prev,
+      pomodorosCompleted: newCount
+    }));
+
+    try {
+      await widgetsService.updateWidgetState(widget.id, {
+        ...widgetState,
+        pomodorosCompleted: newCount
+      });
+    } catch (error) {
+      console.error('Failed to adjust pomodoro count:', error);
+      // Revert on error
+      setWidgetState(prev => ({ ...prev, pomodorosCompleted: (widgetState.pomodorosCompleted || 0) }));
     }
   };
 
@@ -390,6 +432,27 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                   {isUpdatingPause ? '...' : widgetState.isPaused ? 'Resume' : 'Pause'}
                 </motion.button>
               </div>
+
+              {/* Session Counter Adjustment */}
+              {(widgetState.pomodorosCompleted > 0 || config.pomodoroGoal) && (
+                <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                  <span className="text-xs text-purple-100 flex-1">Sessions</span>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => adjustPomodoroCount(-1)}
+                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-all"
+                  >
+                    -1
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => adjustPomodoroCount(1)}
+                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-all"
+                  >
+                    +1
+                  </motion.button>
+                </div>
+              )}
 
               {/* Time Adjustment & Skip Controls */}
               <div className="space-y-2 pt-2 border-t border-white/10">
@@ -765,6 +828,25 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                           <div className="text-lg mt-1">↔️</div>
                         </motion.button>
                       </div>
+                    </div>
+
+                    {/* Progress Bar Width */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-600 flex justify-between">
+                        <span>Progress Bar Width</span>
+                        <span className="text-slate-400">{config.pomodoroStyleSettings?.progressBarWidth || 300}px</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="100"
+                        max="800"
+                        value={config.pomodoroStyleSettings?.progressBarWidth || 300}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          pomodoroStyleSettings: { ...config.pomodoroStyleSettings, progressBarWidth: parseInt(e.target.value) }
+                        })}
+                        className="w-full accent-purple-600"
+                      />
                     </div>
 
                     {/* Display Toggles */}

@@ -174,6 +174,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
   const statusBarSize = styleSettings.statusBarSize || 24;
   const counterSize = styleSettings.counterSize || 16;
   const layoutDirection = styleSettings.layoutDirection || 'vertical';
+  const progressBarWidth = styleSettings.progressBarWidth || 300;
 
   // MINIMAL - Clean, simple with Google Fonts
   if (style === 'minimal') {
@@ -207,7 +208,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
             </div>
           )}
           <div
-            className={layoutDirection === 'horizontal' ? 'flex items-center gap-4' : 'text-center space-y-4'}
+            className={layoutDirection === 'horizontal' ? 'flex items-center gap-6' : 'text-center space-y-4'}
             style={renderBackground ? {
               backgroundColor,
               paddingLeft: `${paddingX}px`,
@@ -228,56 +229,115 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
             >
               {minutes}:{seconds.toString().padStart(2, '0')}
             </div>
-            {showStatus && (
-              <div
-                className="font-semibold flex items-center justify-center gap-2"
-                style={{
-                  fontSize: `${statusBarSize}px`,
-                  color: textColor,
-                  opacity: 0.9,
-                  fontFamily: `'${subFont}', sans-serif`
-                }}
-              >
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{
-                    backgroundColor: state.isPaused ? '#F59E0B' : accentColor,
-                    animation: state.isPaused ? 'none' : 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                  }}
-                />
-                {state.isPaused ? 'Paused' : state.isWorking ? 'Focus Time' : 'Break'}
+            {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
+              <div className="flex flex-col gap-2">
+                {showStatus && (
+                  <div
+                    className="font-semibold flex items-center gap-2"
+                    style={{
+                      fontSize: `${statusBarSize}px`,
+                      color: textColor,
+                      opacity: 0.9,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{
+                        backgroundColor: state.isPaused ? '#F59E0B' : accentColor,
+                        animation: state.isPaused ? 'none' : 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                      }}
+                    />
+                    {state.isPaused ? 'Paused' : state.isWorking ? 'Focus Time' : 'Break'}
+                  </div>
+                )}
+                {showCounter && (state.pomodorosCompleted > 0 || goal) && (
+                  <div
+                    className="font-medium"
+                    style={{
+                      fontSize: `${counterSize}px`,
+                      color: textColor,
+                      opacity: 0.7,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {goal ? `${state.pomodorosCompleted} / ${goal} completed` : `${state.pomodorosCompleted} completed`}
+                  </div>
+                )}
+                {showProgress && (
+                  <div
+                    className="rounded-full overflow-hidden"
+                    style={{
+                      width: `${progressBarWidth}px`,
+                      height: `${timerSize * 0.04}px`,
+                      backgroundColor: 'rgba(255,255,255,0.2)'
+                    }}
+                  >
+                    <div
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(progress, 100)}%`,
+                        backgroundColor: accentColor
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )}
-            {showCounter && (state.pomodorosCompleted > 0 || goal) && (
-              <div
-                className="font-medium"
-                style={{
-                  fontSize: `${counterSize}px`,
-                  color: textColor,
-                  opacity: 0.7,
-                  fontFamily: `'${subFont}', sans-serif`
-                }}
-              >
-                {goal ? `${state.pomodorosCompleted} / ${goal} completed` : `${state.pomodorosCompleted} completed`}
-              </div>
-            )}
-            {showProgress && (
-              <div
-                className="rounded-full overflow-hidden"
-                style={{
-                  width: `${timerSize * 4}px`,
-                  height: `${timerSize * 0.04}px`,
-                  backgroundColor: 'rgba(255,255,255,0.2)'
-                }}
-              >
-                <div
-                  className="h-full transition-all duration-300"
-                  style={{
-                    width: `${Math.min(progress, 100)}%`,
-                    backgroundColor: accentColor
-                  }}
-                />
-              </div>
+            {layoutDirection === 'vertical' && (
+              <>
+                {showStatus && (
+                  <div
+                    className="font-semibold flex items-center justify-center gap-2"
+                    style={{
+                      fontSize: `${statusBarSize}px`,
+                      color: textColor,
+                      opacity: 0.9,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{
+                        backgroundColor: state.isPaused ? '#F59E0B' : accentColor,
+                        animation: state.isPaused ? 'none' : 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                      }}
+                    />
+                    {state.isPaused ? 'Paused' : state.isWorking ? 'Focus Time' : 'Break'}
+                  </div>
+                )}
+                {showCounter && (state.pomodorosCompleted > 0 || goal) && (
+                  <div
+                    className="font-medium"
+                    style={{
+                      fontSize: `${counterSize}px`,
+                      color: textColor,
+                      opacity: 0.7,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {goal ? `${state.pomodorosCompleted} / ${goal} completed` : `${state.pomodorosCompleted} completed`}
+                  </div>
+                )}
+                {showProgress && (
+                  <div
+                    className="rounded-full overflow-hidden"
+                    style={{
+                      width: `${progressBarWidth}px`,
+                      height: `${timerSize * 0.04}px`,
+                      backgroundColor: 'rgba(255,255,255,0.2)'
+                    }}
+                  >
+                    <div
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(progress, 100)}%`,
+                        backgroundColor: accentColor
+                      }}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -368,48 +428,99 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
             >
               {minutes}:{seconds.toString().padStart(2, '0')}
             </div>
-            {showStatus && (
-              <div
-                className="font-black uppercase tracking-widest inline-block px-6 py-3 rounded-xl text-white"
-                style={{
-                  fontSize: `${statusBarSize}px`,
-                  background: `linear-gradient(135deg, ${color1}, ${color2})`,
-                  boxShadow: `0 10px 30px ${color1}40`,
-                  fontFamily: `'${subFont}', sans-serif`
-                }}
-              >
-                {state.isPaused ? '⏸ PAUSED' : state.isWorking ? '🔥 FOCUS' : '☕ BREAK'}
+            {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
+              <div className="flex flex-col gap-3">
+                {showStatus && (
+                  <div
+                    className="font-black uppercase tracking-widest inline-block px-6 py-3 rounded-xl text-white"
+                    style={{
+                      fontSize: `${statusBarSize}px`,
+                      background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                      boxShadow: `0 10px 30px ${color1}40`,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {state.isPaused ? '⏸ PAUSED' : state.isWorking ? '🔥 FOCUS' : '☕ BREAK'}
+                  </div>
+                )}
+                {showCounter && (state.pomodorosCompleted > 0 || goal) && (
+                  <div
+                    className="font-bold text-white"
+                    style={{
+                      fontSize: `${counterSize}px`,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {goal ? `${state.pomodorosCompleted} / ${goal} DONE` : `${state.pomodorosCompleted} DONE`}
+                  </div>
+                )}
+                {showProgress && (
+                  <div
+                    className="rounded-full overflow-hidden backdrop-blur-sm"
+                    style={{
+                      width: `${progressBarWidth}px`,
+                      height: `${timerSize * 0.06}px`,
+                      backgroundColor: 'rgba(255,255,255,0.2)'
+                    }}
+                  >
+                    <div
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(progress, 100)}%`,
+                        background: `linear-gradient(90deg, ${color1}, ${color2})`,
+                        boxShadow: `0 0 20px ${color1}80`
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )}
-            {showCounter && (state.pomodorosCompleted > 0 || goal) && (
-              <div
-                className="font-bold text-white"
-                style={{
-                  fontSize: `${counterSize}px`,
-                  fontFamily: `'${subFont}', sans-serif`
-                }}
-              >
-                {goal ? `${state.pomodorosCompleted} / ${goal} DONE` : `${state.pomodorosCompleted} DONE`}
-              </div>
-            )}
-            {showProgress && (
-              <div
-                className="rounded-full overflow-hidden backdrop-blur-sm"
-                style={{
-                  width: `${timerSize * 5}px`,
-                  height: `${timerSize * 0.06}px`,
-                  backgroundColor: 'rgba(255,255,255,0.2)'
-                }}
-              >
-                <div
-                  className="h-full transition-all duration-300"
-                  style={{
-                    width: `${Math.min(progress, 100)}%`,
-                    background: `linear-gradient(90deg, ${color1}, ${color2})`,
-                    boxShadow: `0 0 20px ${color1}80`
-                  }}
-                />
-              </div>
+            {layoutDirection === 'vertical' && (
+              <>
+                {showStatus && (
+                  <div
+                    className="font-black uppercase tracking-widest inline-block px-6 py-3 rounded-xl text-white"
+                    style={{
+                      fontSize: `${statusBarSize}px`,
+                      background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                      boxShadow: `0 10px 30px ${color1}40`,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {state.isPaused ? '⏸ PAUSED' : state.isWorking ? '🔥 FOCUS' : '☕ BREAK'}
+                  </div>
+                )}
+                {showCounter && (state.pomodorosCompleted > 0 || goal) && (
+                  <div
+                    className="font-bold text-white"
+                    style={{
+                      fontSize: `${counterSize}px`,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {goal ? `${state.pomodorosCompleted} / ${goal} DONE` : `${state.pomodorosCompleted} DONE`}
+                  </div>
+                )}
+                {showProgress && (
+                  <div
+                    className="rounded-full overflow-hidden backdrop-blur-sm"
+                    style={{
+                      width: `${progressBarWidth}px`,
+                      height: `${timerSize * 0.06}px`,
+                      backgroundColor: 'rgba(255,255,255,0.2)'
+                    }}
+                  >
+                    <div
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(progress, 100)}%`,
+                        background: `linear-gradient(90deg, ${color1}, ${color2})`,
+                        boxShadow: `0 0 20px ${color1}80`
+                      }}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -482,46 +593,95 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
             >
               {minutes}:{seconds.toString().padStart(2, '0')}
             </div>
-            {showStatus && (
-              <div
-                className="font-light text-white/90 tracking-widest uppercase"
-                style={{
-                  fontSize: `${statusBarSize}px`,
-                  fontFamily: `'${subFont}', sans-serif`
-                }}
-              >
-                {state.isPaused ? 'Paused' : state.isWorking ? 'Focus' : 'Rest'}
+            {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
+              <div className="flex flex-col gap-2">
+                {showStatus && (
+                  <div
+                    className="font-light text-white/90 tracking-widest uppercase"
+                    style={{
+                      fontSize: `${statusBarSize}px`,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {state.isPaused ? 'Paused' : state.isWorking ? 'Focus' : 'Rest'}
+                  </div>
+                )}
+                {showCounter && (state.pomodorosCompleted > 0 || goal) && (
+                  <div
+                    className="font-light text-white/70"
+                    style={{
+                      fontSize: `${counterSize}px`,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {goal ? `${state.pomodorosCompleted} of ${goal}` : `${state.pomodorosCompleted}`}
+                  </div>
+                )}
+                {showProgress && (
+                  <div
+                    className="rounded-full overflow-hidden"
+                    style={{
+                      width: `${progressBarWidth}px`,
+                      height: `${timerSize * 0.03}px`,
+                      backgroundColor: 'rgba(255,255,255,0.1)'
+                    }}
+                  >
+                    <div
+                      className="h-full transition-all duration-500 ease-out"
+                      style={{
+                        width: `${Math.min(progress, 100)}%`,
+                        backgroundColor: glowColor,
+                        boxShadow: showGlow ? `0 0 ${glowIntensity * 0.7}px ${glowColor}` : 'none'
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )}
-            {showCounter && (state.pomodorosCompleted > 0 || goal) && (
-              <div
-                className="font-light text-white/70"
-                style={{
-                  fontSize: `${counterSize}px`,
-                  fontFamily: `'${subFont}', sans-serif`
-                }}
-              >
-                {goal ? `${state.pomodorosCompleted} of ${goal}` : `${state.pomodorosCompleted}`}
-              </div>
-            )}
-            {showProgress && (
-              <div
-                className="rounded-full overflow-hidden"
-                style={{
-                  width: `${timerSize * 4.5}px`,
-                  height: `${timerSize * 0.03}px`,
-                  backgroundColor: 'rgba(255,255,255,0.1)'
-                }}
-              >
-                <div
-                  className="h-full transition-all duration-500 ease-out"
-                  style={{
-                    width: `${Math.min(progress, 100)}%`,
-                    backgroundColor: glowColor,
-                    boxShadow: showGlow ? `0 0 ${glowIntensity * 0.7}px ${glowColor}` : 'none'
-                  }}
-                />
-              </div>
+            {layoutDirection === 'vertical' && (
+              <>
+                {showStatus && (
+                  <div
+                    className="font-light text-white/90 tracking-widest uppercase"
+                    style={{
+                      fontSize: `${statusBarSize}px`,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {state.isPaused ? 'Paused' : state.isWorking ? 'Focus' : 'Rest'}
+                  </div>
+                )}
+                {showCounter && (state.pomodorosCompleted > 0 || goal) && (
+                  <div
+                    className="font-light text-white/70"
+                    style={{
+                      fontSize: `${counterSize}px`,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {goal ? `${state.pomodorosCompleted} of ${goal}` : `${state.pomodorosCompleted}`}
+                  </div>
+                )}
+                {showProgress && (
+                  <div
+                    className="rounded-full overflow-hidden"
+                    style={{
+                      width: `${progressBarWidth}px`,
+                      height: `${timerSize * 0.03}px`,
+                      backgroundColor: 'rgba(255,255,255,0.1)'
+                    }}
+                  >
+                    <div
+                      className="h-full transition-all duration-500 ease-out"
+                      style={{
+                        width: `${Math.min(progress, 100)}%`,
+                        backgroundColor: glowColor,
+                        boxShadow: showGlow ? `0 0 ${glowIntensity * 0.7}px ${glowColor}` : 'none'
+                      }}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -597,48 +757,101 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
             >
               {minutes}:{seconds.toString().padStart(2, '0')}
             </div>
-            {showStatus && (
-              <div
-                className="inline-block px-8 py-4 font-black uppercase tracking-wider text-white rounded-2xl"
-                style={{
-                  fontSize: `${statusBarSize}px`,
-                  backgroundColor: accentColor,
-                  boxShadow: showShadow ? `6px 6px 0px rgba(0,0,0,0.2)` : 'none',
-                  fontFamily: `'${subFont}', sans-serif`
-                }}
-              >
-                {state.isPaused ? '⏸ PAUSE' : state.isWorking ? '⚡ GO' : '☕ REST'}
+            {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
+              <div className="flex flex-col gap-4">
+                {showStatus && (
+                  <div
+                    className="inline-block px-8 py-4 font-black uppercase tracking-wider text-white rounded-2xl"
+                    style={{
+                      fontSize: `${statusBarSize}px`,
+                      backgroundColor: accentColor,
+                      boxShadow: showShadow ? `6px 6px 0px rgba(0,0,0,0.2)` : 'none',
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {state.isPaused ? '⏸ PAUSE' : state.isWorking ? '⚡ GO' : '☕ REST'}
+                  </div>
+                )}
+                {showCounter && (state.pomodorosCompleted > 0 || goal) && (
+                  <div
+                    className="font-black text-white"
+                    style={{
+                      fontSize: `${counterSize}px`,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {goal ? `${state.pomodorosCompleted}/${goal} DONE` : `${state.pomodorosCompleted} DONE`}
+                  </div>
+                )}
+                {showProgress && (
+                  <div
+                    className="rounded-full overflow-hidden"
+                    style={{
+                      width: `${progressBarWidth}px`,
+                      height: `${timerSize * 0.08}px`,
+                      backgroundColor: 'rgba(255,255,255,0.3)',
+                      boxShadow: showShadow ? '4px 4px 0px rgba(0,0,0,0.2)' : 'none',
+                      border: '3px solid white'
+                    }}
+                  >
+                    <div
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(progress, 100)}%`,
+                        backgroundColor: accentColor
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )}
-            {showCounter && (state.pomodorosCompleted > 0 || goal) && (
-              <div
-                className="font-black text-white"
-                style={{
-                  fontSize: `${counterSize}px`,
-                  fontFamily: `'${subFont}', sans-serif`
-                }}
-              >
-                {goal ? `${state.pomodorosCompleted}/${goal} DONE` : `${state.pomodorosCompleted} DONE`}
-              </div>
-            )}
-            {showProgress && (
-              <div
-                className="rounded-full overflow-hidden border-4 border-white"
-                style={{
-                  width: `${timerSize * 5}px`,
-                  height: `${timerSize * 0.08}px`,
-                  backgroundColor: 'rgba(255,255,255,0.9)',
-                  boxShadow: showShadow ? '4px 4px 0px rgba(0,0,0,0.2)' : 'none'
-                }}
-              >
-                <div
-                  className="h-full transition-all duration-300"
-                  style={{
-                    width: `${Math.min(progress, 100)}%`,
-                    backgroundColor: accentColor
-                  }}
-                />
-              </div>
+            {layoutDirection === 'vertical' && (
+              <>
+                {showStatus && (
+                  <div
+                    className="inline-block px-8 py-4 font-black uppercase tracking-wider text-white rounded-2xl"
+                    style={{
+                      fontSize: `${statusBarSize}px`,
+                      backgroundColor: accentColor,
+                      boxShadow: showShadow ? `6px 6px 0px rgba(0,0,0,0.2)` : 'none',
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {state.isPaused ? '⏸ PAUSE' : state.isWorking ? '⚡ GO' : '☕ REST'}
+                  </div>
+                )}
+                {showCounter && (state.pomodorosCompleted > 0 || goal) && (
+                  <div
+                    className="font-black text-white"
+                    style={{
+                      fontSize: `${counterSize}px`,
+                      fontFamily: `'${subFont}', sans-serif`
+                    }}
+                  >
+                    {goal ? `${state.pomodorosCompleted}/${goal} DONE` : `${state.pomodorosCompleted} DONE`}
+                  </div>
+                )}
+                {showProgress && (
+                  <div
+                    className="rounded-full overflow-hidden"
+                    style={{
+                      width: `${progressBarWidth}px`,
+                      height: `${timerSize * 0.08}px`,
+                      backgroundColor: 'rgba(255,255,255,0.3)',
+                      boxShadow: showShadow ? '4px 4px 0px rgba(0,0,0,0.2)' : 'none',
+                      border: '3px solid white'
+                    }}
+                  >
+                    <div
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min(progress, 100)}%`,
+                        backgroundColor: accentColor
+                      }}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
