@@ -322,20 +322,46 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
       }
 
       if (type === 'study-room') {
-        // Create study room first
-        const roomResponse = await fetch('/api/study-room/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: data.roomName || 'Study Session',
-          }),
-        });
+        const roomAction = data.roomAction || 'create';
+        let room;
 
-        if (!roomResponse.ok) {
-          throw new Error('Failed to create study room');
+        if (roomAction === 'create') {
+          // Create new study room
+          const roomResponse = await fetch('/api/study-room/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: data.roomName || 'Study Session',
+            }),
+          });
+
+          if (!roomResponse.ok) {
+            throw new Error('Failed to create study room');
+          }
+
+          const roomData = await roomResponse.json();
+          room = roomData.room;
+        } else {
+          // Join existing room
+          if (!data.inviteCode || data.inviteCode.trim().length === 0) {
+            throw new Error('Please enter an invite code');
+          }
+
+          const joinResponse = await fetch('/api/study-room/join', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              inviteCode: data.inviteCode.trim().toUpperCase(),
+            }),
+          });
+
+          if (!joinResponse.ok) {
+            throw new Error('Failed to join room. Check your invite code.');
+          }
+
+          const joinData = await joinResponse.json();
+          room = joinData.room;
         }
-
-        const { room } = await roomResponse.json();
 
         const newOverlay: OverlayItem = {
           id: `study-room-${Date.now()}`,
@@ -371,6 +397,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
           widget_id: savedWidget.id,
           room_id: room.id,
           invite_code: room.invite_code,
+          action: roomAction,
         });
       }
     } catch (error) {
@@ -1083,22 +1110,71 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
 
                           {type === 'study-room' && (
                             <div className="space-y-4">
-                              <label className="space-y-2 text-sm text-slate-700">
-                                <span className="font-medium">Room name</span>
-                                <input
-                                  {...register('roomName')}
-                                  type="text"
-                                  placeholder="My Study Session"
-                                  className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                                />
-                              </label>
+                              {/* Choose: Create or Join */}
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-700">What would you like to do?</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setValue('roomAction', 'create')}
+                                    className={`px-4 py-3 rounded-lg text-sm transition-all ${
+                                      watch('roomAction') === 'create' || !watch('roomAction')
+                                        ? 'bg-emerald-600 text-white font-medium'
+                                        : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
+                                    }`}
+                                  >
+                                    Create New Room
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setValue('roomAction', 'join')}
+                                    className={`px-4 py-3 rounded-lg text-sm transition-all ${
+                                      watch('roomAction') === 'join'
+                                        ? 'bg-emerald-600 text-white font-medium'
+                                        : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
+                                    }`}
+                                  >
+                                    Join Existing Room
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Create Room */}
+                              {(!watch('roomAction') || watch('roomAction') === 'create') && (
+                                <label className="space-y-2 text-sm text-slate-700">
+                                  <span className="font-medium">Room name</span>
+                                  <input
+                                    {...register('roomName')}
+                                    type="text"
+                                    placeholder="My Study Session"
+                                    className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                                  />
+                                </label>
+                              )}
+
+                              {/* Join Room */}
+                              {watch('roomAction') === 'join' && (
+                                <label className="space-y-2 text-sm text-slate-700">
+                                  <span className="font-medium">Invite code</span>
+                                  <input
+                                    {...register('inviteCode')}
+                                    type="text"
+                                    placeholder="STUDY-XY7K"
+                                    className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 uppercase font-mono"
+                                  />
+                                </label>
+                              )}
+
                               <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 text-sm">
                                 <div className="flex items-start gap-3">
                                   <span className="text-lg">👥</span>
                                   <div className="flex-1">
                                     <p className="font-semibold text-emerald-900 mb-1">Study Together in Real-Time</p>
                                     <p className="text-emerald-800 mb-2">
-                                      Create a room and share the invite code with friends. You'll all appear in the widget and can see who's actively studying (OBS running) or away.
+                                      {(!watch('roomAction') || watch('roomAction') === 'create')
+                                        ? 'Create a room and share the invite code with friends.'
+                                        : 'Enter the invite code your friend shared with you.'
+                                      } You'll all appear in the widget and can see who's actively studying (OBS running) or away.
                                     </p>
                                     <ul className="text-emerald-800 text-xs space-y-1">
                                       <li>• Active status updates every 30 seconds</li>

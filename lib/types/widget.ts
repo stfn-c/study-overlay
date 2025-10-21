@@ -6,6 +6,8 @@ export interface FormData {
   restTime?: string;
   enableSound?: boolean;
   roomName?: string;
+  roomAction?: 'create' | 'join';
+  inviteCode?: string;
 }
 
 export interface OverlayItem {
