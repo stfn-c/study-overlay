@@ -176,6 +176,23 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
   const layoutDirection = styleSettings.layoutDirection || 'vertical';
   const progressBarWidth = styleSettings.progressBarWidth || 300;
   const progressBarHeight = styleSettings.progressBarHeight || 24;
+  const timeFormat = styleSettings.timeFormat || 'colon';
+
+  // Format time based on selected format
+  const formatTime = (mins: number, secs: number) => {
+    const totalSeconds = mins * 60 + secs;
+    switch (timeFormat) {
+      case 'seconds':
+        return `${totalSeconds}s`;
+      case 'units':
+        return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+      case 'colon':
+      default:
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+  };
+
+  const formattedTime = formatTime(minutes, seconds);
 
   // MINIMAL - Clean, simple with Google Fonts
   if (style === 'minimal') {
@@ -229,7 +246,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 fontVariantNumeric: 'tabular-nums'
               }}
             >
-              {minutes}:{seconds.toString().padStart(2, '0')}
+              {formattedTime}
             </div>
             {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
               <div className="flex flex-col gap-2 items-start">
@@ -430,7 +447,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 fontVariantNumeric: 'tabular-nums'
               }}
             >
-              {minutes}:{seconds.toString().padStart(2, '0')}
+              {formattedTime}
             </div>
             {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
               <div className="flex flex-col gap-3 items-start">
@@ -597,7 +614,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 fontVariantNumeric: 'tabular-nums'
               }}
             >
-              {minutes}:{seconds.toString().padStart(2, '0')}
+              {formattedTime}
             </div>
             {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
               <div className="flex flex-col gap-2 items-start">
@@ -763,7 +780,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 fontVariantNumeric: 'tabular-nums'
               }}
             >
-              {minutes}:{seconds.toString().padStart(2, '0')}
+              {formattedTime}
             </div>
             {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
               <div className="flex flex-col gap-4 items-start">

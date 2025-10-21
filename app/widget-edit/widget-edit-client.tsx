@@ -693,7 +693,49 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                     animate={{ opacity: 1, height: 'auto' }}
                     className="space-y-4 pt-4 border-t border-slate-200"
                   >
-                    <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Layout & Display</h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Layout & Display</h3>
+                      <button
+                        type="button"
+                        onClick={() => setConfig({
+                          ...config,
+                          pomodoroStyleSettings: {}
+                        })}
+                        className="text-xs text-slate-500 hover:text-slate-700 underline underline-offset-2 transition-colors"
+                      >
+                        Reset to defaults
+                      </button>
+                    </div>
+
+                    {/* Time Format Selector */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-600">Timer Format</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { value: 'colon', label: '0:53', desc: 'Default' },
+                          { value: 'seconds', label: '53s', desc: 'Seconds' },
+                          { value: 'units', label: '0m 53s', desc: 'With units' },
+                        ].map((format) => (
+                          <motion.button
+                            key={format.value}
+                            type="button"
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setConfig({
+                              ...config,
+                              pomodoroStyleSettings: { ...config.pomodoroStyleSettings, timeFormat: format.value }
+                            })}
+                            className={`p-2 rounded-lg border-2 text-center transition-all ${
+                              (config.pomodoroStyleSettings?.timeFormat || 'colon') === format.value
+                                ? 'border-purple-600 bg-purple-50'
+                                : 'border-slate-200 hover:border-slate-300'
+                            }`}
+                          >
+                            <div className="text-sm font-mono font-semibold">{format.label}</div>
+                            <div className="text-xs text-slate-500 mt-0.5">{format.desc}</div>
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
 
                     {/* Timer Font Selection with Visual Preview */}
                     <div className="space-y-2">
