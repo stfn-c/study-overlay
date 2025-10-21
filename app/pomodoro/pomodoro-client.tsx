@@ -228,8 +228,8 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
             <div className="absolute inset-0 flex items-center justify-center z-50 animate-in fade-in duration-500">
               <div className="text-center">
                 <div className="text-8xl mb-4 animate-bounce">🎉</div>
-                <div className="text-5xl font-bold mb-2" style={{ color: textColor }}>Goal Reached!</div>
-                <div className="text-3xl opacity-90" style={{ color: textColor }}>{state.pomodorosCompleted} / {goal}</div>
+                <div className="text-5xl font-bold mb-2" style={{ color: timerColor }}>Goal Reached!</div>
+                <div className="text-3xl opacity-90" style={{ color: timerColor }}>{state.pomodorosCompleted} / {goal}</div>
               </div>
             </div>
           )}
@@ -319,8 +319,8 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="font-semibold flex items-center justify-center gap-2"
                     style={{
                       fontSize: `${statusBarSize}px`,
-                      color: textColor,
-                      opacity: 0.9,
+                      color: statusColor,
+                      
                       fontFamily: `'${subFont}', sans-serif`
                     }}
                   >
@@ -339,8 +339,8 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="font-medium"
                     style={{
                       fontSize: `${counterSize}px`,
-                      color: textColor,
-                      opacity: 0.7,
+                      color: counterColor,
+                      
                       fontFamily: `'${subFont}', sans-serif`
                     }}
                   >
@@ -353,7 +353,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     style={{
                       width: `${progressBarWidth}px`,
                       height: `${progressBarHeight}px`,
-                      backgroundColor: 'rgba(255,255,255,0.2)'
+                      backgroundColor: progressPassive
                     }}
                   >
                     <div
@@ -386,6 +386,8 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
     };
     const [color1, color2] = schemes[scheme as keyof typeof schemes];
     const animationSpeed = styleSettings.animationSpeed || 8;
+    const progressActive = progressActiveColor || color1;
+    const progressPassive = progressPassiveColor || "#FFFFFF";
 
     return (
       <>
@@ -490,7 +492,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     style={{
                       width: `${progressBarWidth}px`,
                       height: `${progressBarHeight}px`,
-                      backgroundColor: 'rgba(255,255,255,0.2)'
+                      backgroundColor: progressPassive
                     }}
                   >
                     <div
@@ -537,7 +539,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     style={{
                       width: `${progressBarWidth}px`,
                       height: `${progressBarHeight}px`,
-                      backgroundColor: 'rgba(255,255,255,0.2)'
+                      backgroundColor: progressPassive
                     }}
                   >
                     <div
@@ -565,6 +567,8 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
     const glowColor = styleSettings.glowColor || '#8B5CF6';
     const glowIntensity = styleSettings.glowIntensity || 40;
     const showGlow = styleSettings.showGlow !== false;
+    const progressActive = progressActiveColor || glowColor;
+    const progressPassive = progressPassiveColor || "#FFFFFF";
 
     return (
       <>
@@ -655,7 +659,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     style={{
                       width: `${progressBarWidth}px`,
                       height: `${progressBarHeight}px`,
-                      backgroundColor: 'rgba(255,255,255,0.1)'
+                      backgroundColor: progressPassive
                     }}
                   >
                     <div
@@ -700,7 +704,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     style={{
                       width: `${progressBarWidth}px`,
                       height: `${progressBarHeight}px`,
-                      backgroundColor: 'rgba(255,255,255,0.1)'
+                      backgroundColor: progressPassive
                     }}
                   >
                     <div
@@ -728,6 +732,8 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
     const accentColor = styleSettings.accentColor || '#F59E0B';
     const strokeWidth = styleSettings.strokeWidth || 2;
     const showShadow = styleSettings.showShadow !== false;
+    const progressActive = progressActiveColor || accentColor;
+    const progressPassive = progressPassiveColor || "#FFFFFF";
 
     return (
       <>

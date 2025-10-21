@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { widgetsService } from '@/lib/services/widgets';
 import { createClient } from '@/lib/supabase/client';
 import { OverlayItem } from '@/lib/types/widget';
+import posthog from '@/instrumentation-client';
 
 interface WidgetEditClientProps {
   widget: any;
@@ -205,6 +206,13 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
       });
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 1500);
+
+      // Track widget update
+      posthog.capture('widget_updated', {
+        widget_id: widget.id,
+        widget_type: widget.type,
+        widget_name: name,
+      });
     } catch (error) {
       console.error('Failed to auto-save widget:', error);
       setSaveStatus('idle');
@@ -844,13 +852,13 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-slate-600 flex justify-between">
                         <span>Status Bar Size</span>
-                        <span className="text-slate-400">{config.pomodoroStyleSettings?.statusBarSize || 24}px</span>
+                        <span className="text-slate-400">{config.pomodoroStyleSettings?.statusBarSize || 48}px</span>
                       </label>
                       <input
                         type="range"
                         min="8"
                         max="120"
-                        value={config.pomodoroStyleSettings?.statusBarSize || 24}
+                        value={config.pomodoroStyleSettings?.statusBarSize || 48}
                         onChange={(e) => setConfig({
                           ...config,
                           pomodoroStyleSettings: { ...config.pomodoroStyleSettings, statusBarSize: parseInt(e.target.value) }
@@ -863,13 +871,13 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-slate-600 flex justify-between">
                         <span>Counter Size</span>
-                        <span className="text-slate-400">{config.pomodoroStyleSettings?.counterSize || 16}px</span>
+                        <span className="text-slate-400">{config.pomodoroStyleSettings?.counterSize || 32}px</span>
                       </label>
                       <input
                         type="range"
                         min="8"
                         max="80"
-                        value={config.pomodoroStyleSettings?.counterSize || 16}
+                        value={config.pomodoroStyleSettings?.counterSize || 32}
                         onChange={(e) => setConfig({
                           ...config,
                           pomodoroStyleSettings: { ...config.pomodoroStyleSettings, counterSize: parseInt(e.target.value) }
@@ -953,6 +961,171 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                         })}
                         className="w-full accent-purple-600"
                       />
+                    </div>
+
+                    {/* Color Pickers */}
+                    <div className="space-y-4 pt-4 border-t border-slate-200">
+                      <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Colors</h4>
+
+                      {/* Timer Color */}
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-slate-600">Timer Color</label>
+                        <div className="flex gap-2">
+                          {['#FFFFFF', '#000000', '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899'].map((color) => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => setConfig({
+                                ...config,
+                                pomodoroStyleSettings: { ...config.pomodoroStyleSettings, timerColor: color }
+                              })}
+                              className={`w-8 h-8 rounded-lg border-2 transition-all ${
+                                (config.pomodoroStyleSettings?.timerColor || '#FFFFFF') === color
+                                  ? 'border-slate-900 scale-110'
+                                  : 'border-slate-200 hover:scale-105'
+                              }`}
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                          <input
+                            type="color"
+                            value={config.pomodoroStyleSettings?.timerColor || '#FFFFFF'}
+                            onChange={(e) => setConfig({
+                              ...config,
+                              pomodoroStyleSettings: { ...config.pomodoroStyleSettings, timerColor: e.target.value }
+                            })}
+                            className="w-8 h-8 rounded-lg border-2 border-slate-200 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Status Color */}
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-slate-600">Status Color</label>
+                        <div className="flex gap-2">
+                          {['#FFFFFF', '#000000', '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899'].map((color) => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => setConfig({
+                                ...config,
+                                pomodoroStyleSettings: { ...config.pomodoroStyleSettings, statusColor: color }
+                              })}
+                              className={`w-8 h-8 rounded-lg border-2 transition-all ${
+                                (config.pomodoroStyleSettings?.statusColor || '#FFFFFF') === color
+                                  ? 'border-slate-900 scale-110'
+                                  : 'border-slate-200 hover:scale-105'
+                              }`}
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                          <input
+                            type="color"
+                            value={config.pomodoroStyleSettings?.statusColor || '#FFFFFF'}
+                            onChange={(e) => setConfig({
+                              ...config,
+                              pomodoroStyleSettings: { ...config.pomodoroStyleSettings, statusColor: e.target.value }
+                            })}
+                            className="w-8 h-8 rounded-lg border-2 border-slate-200 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Counter Color */}
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-slate-600">Counter Color</label>
+                        <div className="flex gap-2">
+                          {['#FFFFFF', '#000000', '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899'].map((color) => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => setConfig({
+                                ...config,
+                                pomodoroStyleSettings: { ...config.pomodoroStyleSettings, counterColor: color }
+                              })}
+                              className={`w-8 h-8 rounded-lg border-2 transition-all ${
+                                (config.pomodoroStyleSettings?.counterColor || '#FFFFFF') === color
+                                  ? 'border-slate-900 scale-110'
+                                  : 'border-slate-200 hover:scale-105'
+                              }`}
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                          <input
+                            type="color"
+                            value={config.pomodoroStyleSettings?.counterColor || '#FFFFFF'}
+                            onChange={(e) => setConfig({
+                              ...config,
+                              pomodoroStyleSettings: { ...config.pomodoroStyleSettings, counterColor: e.target.value }
+                            })}
+                            className="w-8 h-8 rounded-lg border-2 border-slate-200 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Progress Bar Colors */}
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-slate-600">Progress Bar - Active (Fill)</label>
+                          <div className="flex gap-2">
+                            {['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#FFFFFF', '#000000'].map((color) => (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => setConfig({
+                                  ...config,
+                                  pomodoroStyleSettings: { ...config.pomodoroStyleSettings, progressActiveColor: color }
+                                })}
+                                className={`w-8 h-8 rounded-lg border-2 transition-all ${
+                                  config.pomodoroStyleSettings?.progressActiveColor === color
+                                    ? 'border-slate-900 scale-110'
+                                    : 'border-slate-200 hover:scale-105'
+                                }`}
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                            <input
+                              type="color"
+                              value={config.pomodoroStyleSettings?.progressActiveColor || '#10B981'}
+                              onChange={(e) => setConfig({
+                                ...config,
+                                pomodoroStyleSettings: { ...config.pomodoroStyleSettings, progressActiveColor: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded-lg border-2 border-slate-200 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-slate-600">Progress Bar - Passive (Background)</label>
+                          <div className="flex gap-2">
+                            {['#FFFFFF', '#000000', '#1E293B', '#475569', '#94A3B8', '#CBD5E1', '#E2E8F0', '#F1F5F9'].map((color) => (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => setConfig({
+                                  ...config,
+                                  pomodoroStyleSettings: { ...config.pomodoroStyleSettings, progressPassiveColor: color }
+                                })}
+                                className={`w-8 h-8 rounded-lg border-2 transition-all ${
+                                  config.pomodoroStyleSettings?.progressPassiveColor === color
+                                    ? 'border-slate-900 scale-110'
+                                    : 'border-slate-200 hover:scale-105'
+                                }`}
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                            <input
+                              type="color"
+                              value={config.pomodoroStyleSettings?.progressPassiveColor || '#FFFFFF'}
+                              onChange={(e) => setConfig({
+                                ...config,
+                                pomodoroStyleSettings: { ...config.pomodoroStyleSettings, progressPassiveColor: e.target.value }
+                              })}
+                              className="w-8 h-8 rounded-lg border-2 border-slate-200 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Display Toggles */}
