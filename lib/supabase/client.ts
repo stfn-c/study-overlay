@@ -1,6 +1,11 @@
 import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
+  // Guard against server-side rendering
+  if (typeof document === 'undefined') {
+    throw new Error('createClient() from @/lib/supabase/client can only be used in Client Components. Use @/lib/supabase/server instead.')
+  }
+
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
