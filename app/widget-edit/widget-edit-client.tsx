@@ -1511,50 +1511,6 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
             )}
           </div>
 
-          {/* OBS Link */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-slate-900">
-                OBS Browser Source
-              </h3>
-              <button
-                onClick={() => setShowHelpModal(true)}
-                className="text-xs text-slate-600 hover:text-slate-900 underline underline-offset-2"
-              >
-                Having issues?
-              </button>
-            </div>
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={widgetUrl}
-                  readOnly
-                  className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-mono text-slate-600"
-                />
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={copyUrl}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                    copied
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-slate-900 text-white hover:bg-slate-800'
-                  }`}
-                >
-                  {copied ? 'Copied!' : 'Copy'}
-                </motion.button>
-              </div>
-              <div className="text-xs text-slate-500 space-y-1">
-                <p>• Width: 1920px</p>
-                <p>• Height: 1080px</p>
-                <p>• Refresh when scene becomes active: Yes</p>
-              </div>
-              <p className="text-xs text-slate-600 pt-2">
-                Don't know how to use this? <button onClick={() => setShowHelpModal(true)} className="font-semibold text-slate-900 hover:underline">Click here for step-by-step instructions</button>
-              </p>
-            </div>
-          </div>
-
           {/* Quick Tips */}
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white">
             <h3 className="text-sm font-semibold mb-3">Quick Tips</h3>
