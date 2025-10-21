@@ -51,6 +51,7 @@ export default async function Page({
     const { data: widgets } = await supabase
       .from('widgets')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     initialWidgets = widgets || [];
 

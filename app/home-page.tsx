@@ -393,6 +393,25 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                   Pomodoro timer • Spotify now-playing • Local time
                 </p>
               </div>
+              <div className="pt-3 border-t border-slate-200">
+                <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                  <p className="text-xs font-medium uppercase tracking-wider text-amber-700 mb-2">Known Issues</p>
+                  <p className="text-xs text-amber-800 leading-relaxed mb-2">
+                    Quick heads up—I'm currently drowning in exams, but I'm aware of these bugs and actively working on fixes:
+                  </p>
+                  <ul className="text-xs text-amber-800 space-y-1 list-disc list-inside">
+                    <li>Spotify integration not working for new users</li>
+                    <li>OBS browser source occasionally auto-refreshing (investigating this one)</li>
+                  </ul>
+                  <p className="text-xs text-amber-800 mt-2">
+                    Spot something else acting weird?{' '}
+                    <Link href="https://instagram.com/stfn.c" className="font-semibold underline underline-offset-2 hover:text-amber-900">
+                      Hit me up on Instagram
+                    </Link>
+                    {' '}and let me know!
+                  </p>
+                </div>
+              </div>
             </CardHeader>
           </Card>
         </Card>
