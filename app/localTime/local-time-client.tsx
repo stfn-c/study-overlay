@@ -2,28 +2,32 @@
 
 import { useEffect, useState } from 'react'
 
-export default function LocalTimeClient() {
+interface LocalTimeClientProps {
+  widgetId: string;
+}
+
+export default function LocalTimeClient({ widgetId }: LocalTimeClientProps) {
   const [displayedTime, setDisplayedTime] = useState("");
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const updateTime = () => {
       const time = new Date();
-
       const hours = time.getHours();
       const minutes = time.getMinutes();
-      const seconds = time.getSeconds();
-      const DayShortened = time.toLocaleDateString('en-US', { weekday: 'short' });
-
-      const timeString = `${hours}:${minutes} ${DayShortened}`;
+      const day = time.toLocaleDateString('en-US', { weekday: 'short' });
+      const timeString = `${hours}:${minutes.toString().padStart(2, '0')} ${day}`;
       setDisplayedTime(timeString);
-    }, 1000)
-    return () => clearInterval(interval)
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
   }, [])
 
   return (
-    <div className="w-full h-screen flex flex-grow bg-green-500 font-sans text-white">
-      <div className='mr-[5rem] text-[3rem] font-extrabold flex flex-col'>
-        {displayedTime}
+    <div className="w-full h-screen flex items-center justify-center" style={{ backgroundColor: 'transparent' }}>
+      <div className="text-8xl font-bold text-white">
+        {displayedTime || 'Loading...'}
       </div>
     </div>
   )

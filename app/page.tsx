@@ -1,44 +1,82 @@
-import { headers, cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import HomePage from './home-page';
-import { fetchSpotifyAccessToken } from '@/utils/spotify';
-
-export const metadata = {
-  title: 'Study Overlay',
-  description: 'Clean overlays that keep your study stream focused.',
-};
+import { fetchSpotifyAccessToken } from '@/lib/utils/spotify';
+import { createClient } from '@/lib/supabase/server';
+import { usersService } from '@/lib/services/users';
+import { featureRequestsService } from '@/lib/services/feature-requests';
 
 export default async function Page({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const host = process.env.HOST;
+  const params = await searchParams;
+  const host = process.env.HOST || 'http://localhost:3000';
 
-  // Get search params
-  const code = typeof searchParams.code === 'string' ? searchParams.code : undefined;
-  const access_token = typeof searchParams.access_token === 'string' ? searchParams.access_token : undefined;
-  const refresh_token_query = typeof searchParams.refresh_token === 'string' ? searchParams.refresh_token : undefined;
+  const code = typeof params.code === 'string' ? params.code : undefined;
+  const access_token = typeof params.access_token === 'string' ? params.access_token : undefined;
+  const refresh_token = typeof params.refresh_token === 'string' ? params.refresh_token : undefined;
+
+  // Get current user from Supabase
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   // Handle Spotify OAuth callback
-  if (code && host) {
-    const data = await fetchSpotifyAccessToken(code, host);
-    const accessToken = data.access_token;
-    const refreshTokenVal = data.refresh_token;
+  if (code && user) {
+    try {
+      // Spotify redirect URI must match exactly what's configured in the app
+      const redirectUri = host; // This should be http://localhost:3000 or your production URL
+      const data = await fetchSpotifyAccessToken(code, redirectUri);
 
-    redirect(`/?access_token=${accessToken}&refresh_token=${refreshTokenVal}`);
+      // Save Spotify credentials to users table
+      await usersService.saveSpotifyCredentials(user.id, {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresIn: data.expires_in || 3600,
+      });
+
+      redirect('/?spotify_connected=true');
+    } catch (error) {
+      console.error('Failed to save Spotify credentials:', error);
+      redirect('/?spotify_error=true');
+    }
   }
 
-  // Pass tokens to client component
-  if (access_token) {
-    return (
-      <HomePage
-        token={access_token}
-        refreshTokenA={refresh_token_query}
-        host={host || null}
-      />
-    );
+  // Fetch user's widgets if logged in
+  let initialWidgets = [];
+  let spotifyToken = null;
+  let spotifyRefreshToken = null;
+
+  if (user) {
+    const { data: widgets } = await supabase
+      .from('widgets')
+      .select('*')
+      .order('created_at', { ascending: false });
+    initialWidgets = widgets || [];
+
+    // Get Spotify credentials from database
+    try {
+      const validToken = await usersService.getValidSpotifyToken(user.id);
+      const credentials = await usersService.getSpotifyCredentials(user.id);
+      spotifyToken = validToken;
+      spotifyRefreshToken = credentials.spotify_refresh_token;
+    } catch (error) {
+      // User hasn't connected Spotify yet
+      console.log('No Spotify credentials found for user');
+    }
   }
 
-  return <HomePage host={host || null} />;
+  // Fetch feature requests for everyone
+  const featureRequests = await featureRequestsService.getAllFeatureRequests(user?.id);
+
+  return (
+    <HomePage
+      host={host}
+      token={spotifyToken || access_token}
+      refreshToken={spotifyRefreshToken || refresh_token}
+      user={user}
+      initialWidgets={initialWidgets}
+      featureRequests={featureRequests}
+    />
+  );
 }

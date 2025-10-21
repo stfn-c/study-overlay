@@ -1,132 +1,295 @@
 'use client'
 
 import Image from 'next/image'
-import { Inter } from 'next/font/google'
-import { useEffect, useState } from 'react'
-import { refreshToken } from '@/utils/spotify';
-
-const inter = Inter({ subsets: ['latin'] })
+import { useEffect, useState, useCallback } from 'react'
+import { refreshToken } from '@/lib/utils/spotify';
+import { widgetsService } from '@/lib/services/widgets';
+import { GlassmorphismStyle } from './spotify-styles';
 
 interface SpotifyClientProps {
-  token: string;
-  refreshTokenString: string;
-  host: string;
-  vinyl: boolean;
+  token?: string;
+  refreshToken?: string;
+  host?: string;
+  vinyl?: boolean;
+  widgetId?: string;
+  style?: 'glassmorphism' | 'vinyl' | 'default';
+  styleSettings?: {
+    // Glassmorphism
+    glassBlur?: number;
+    glassOpacity?: number;
+    accentColor?: string;
+    compact?: boolean;
+    // Vinyl
+    textPosition?: string;
+    vinylSize?: number;
+    labelColor?: string;
+  };
 }
 
-export default function SpotifyClient({ token, refreshTokenString, host, vinyl }: SpotifyClientProps) {
-  async function fetchWebApi(endpoint: string, method: string, body?: any) {
-    let usedToken = (localStorage.getItem('token') && localStorage.getItem('token') != "undefined") ? localStorage.getItem('token') : token
+interface CurrentlyPlaying {
+  item?: {
+    name: string;
+    artists: Array<{ name: string }>;
+    album: {
+      images: Array<{ url: string }>;
+    };
+    duration_ms: number;
+  };
+  progress_ms: number;
+  error?: {
+    status: number;
+    message: string;
+  };
+}
 
-    if (!usedToken) {
-      return;
+export default function SpotifyClient({ token, refreshToken: refreshTokenString, host, vinyl, widgetId, style = 'default', styleSettings = {} }: SpotifyClientProps) {
+  const [songName, setSongName] = useState('Waiting for music...')
+  const [artistName, setArtistName] = useState('')
+  const [progress, setProgress] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [albumCover, setAlbumCover] = useState('')
+  const [lastTrackId, setLastTrackId] = useState<string | null>(null)
+
+  const updateWidgetState = useCallback(async (trackInfo: any) => {
+    if (!widgetId) return;
+
+    try {
+      await widgetsService.updateWidgetState(widgetId, {
+        currentTrack: trackInfo
+      });
+    } catch (error) {
+      console.error('Failed to update Spotify widget state:', error);
     }
+  }, [widgetId]);
+
+  async function fetchWebApi(endpoint: string) {
+    let usedToken = (localStorage.getItem('token') && localStorage.getItem('token') !== "undefined")
+      ? localStorage.getItem('token')
+      : token;
+
+    if (!usedToken) return null;
+
     const res = await fetch(`https://api.spotify.com/${endpoint}`, {
       headers: {
         Authorization: `Bearer ${usedToken}`,
       },
-      method,
-      body: JSON.stringify(body)
     });
     return await res.json();
   }
 
-  async function getCurrentPlaying() {
-    return (await fetchWebApi('v1/me/player/currently-playing', 'GET'));
+  async function getTrackInfo() {
+    const response: CurrentlyPlaying = await fetchWebApi('v1/me/player/currently-playing');
+
+    if (response?.error?.status === 401) {
+      const tokenData = await refreshToken({
+        refresh_token: refreshTokenString || localStorage.getItem('refreshToken') || '',
+        host: host || '',
+      });
+
+      if (!tokenData) {
+        console.log('Could not refresh token');
+        return;
+      }
+
+      localStorage.setItem('token', tokenData.access_token);
+      localStorage.setItem('refreshToken', tokenData.refresh_token);
+      return getTrackInfo();
+    }
+
+    if (response?.item) {
+      const { name, artists, album, duration_ms } = response.item;
+      const artistsArray = artists.map((artist) => artist.name);
+      const newSongName = name;
+      const newArtistName = artistsArray.join(', ');
+
+      setSongName(newSongName);
+      setArtistName(newArtistName);
+      setProgress(response.progress_ms);
+      setDuration(duration_ms);
+
+      if (album.images.length > 0) {
+        setAlbumCover(album.images[0].url);
+      }
+
+      // Update widget state if track changed
+      const trackId = `${newSongName}-${newArtistName}`;
+      if (trackId !== lastTrackId) {
+        setLastTrackId(trackId);
+        updateWidgetState({
+          name: newSongName,
+          artist: newArtistName,
+          album: album.name,
+          albumCover: album.images[0]?.url,
+          progress: response.progress_ms,
+          duration: duration_ms
+        });
+      }
+    } else {
+      setSongName('No track playing');
+      setArtistName('');
+      updateWidgetState(null);
+    }
   }
 
-  const [songName, setSongName] = useState('')
-  const [artistName, setArtistName] = useState('')
-  const [progress, setProgress] = useState(0)
-  const [actualProgress, setActualProgress] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [albumCover, setAlbumCover] = useState('')
-
   useEffect(() => {
-    if (!token) {
+    // Check if Spotify is connected
+    if (!token && !localStorage.getItem('token')) {
+      setSongName('Connect Spotify to see now playing');
       return;
     }
 
-    const intervalID = setInterval(() => {
-      getCurrentPlaying().then(currentPlaying => {
-        console.log(currentPlaying)
-        if (currentPlaying.error && currentPlaying.error.status === 401) {
-          console.log("-------------------")
-          console.log(token)
-          console.log(currentPlaying.error.message)
-          refreshToken(refreshTokenString, host).then(data => {
-            console.log("data", data)
-            localStorage.setItem('token', data.access_token)
-          });
+    getTrackInfo(); // Initial fetch
 
-          return;
-        }
+    const interval = setInterval(() => {
+      getTrackInfo();
+    }, 3000); // Poll every 3 seconds
 
-        if (!currentPlaying || !currentPlaying.item || !currentPlaying.item.name)
-          return;
+    return () => clearInterval(interval);
+  }, []);
 
-        setSongName(currentPlaying.item.name)
-        setArtistName(currentPlaying.item.artists[0].name)
-        setProgress(currentPlaying.progress_ms)
-        setActualProgress(currentPlaying.progress_ms)
-        setDuration(currentPlaying.item.duration_ms)
-        setAlbumCover(currentPlaying.item.album.images[0].url)
-      })
-    }, 1000)
+  const progressPercentage = duration > 0 ? (progress / duration) * 100 : 0;
 
-    return () => clearInterval(intervalID)
-  }, [token, refreshTokenString, host])
-
-  if (!token) {
+  // Render based on style
+  if (style === 'glassmorphism') {
     return (
-      <div>
-        <h1>
-          token not found. you are not meant to access this link directly. use the link generator
-        </h1>
-      </div>)
+      <GlassmorphismStyle
+        songName={songName}
+        artistName={artistName}
+        albumCover={albumCover}
+        progress={progress}
+        duration={duration}
+        settings={styleSettings}
+      />
+    );
   }
 
-  return (
-    <div className="w-full h-screen flex flex-grow bg-green-500 font-sans text-white">
-      <div>
-        <div className='flex p-2 '>
-          {vinyl ? (
-            <div className="relative h-[100px] w-[100px]">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-[20px] w-[20px] bg-green-500 rounded-full"></div>
-              </div>
-              <div className="relative flex items-center justify-center overflow-hidden bg-black rounded-full animate-spin-slow">
-                <div className="absolute w-[38%] h-[38%] bg-green-500 rounded-full" />
-                {albumCover && <Image src={albumCover} width={500} height={500} className="rounded-full" alt="Album Cover" />}
-              </div>
-            </div>
-          ) : (
-            <div className="h-[100px] w-[100px]">
-              {albumCover && <Image src={albumCover} width={500} height={500} className="rounded-[1rem]" alt="Album Cover" />}
-            </div>
-          )}
-          <div className='flex flex-col -mt-4'>
-            <h1 className='text-[3rem] font-extrabold flex my-auto ml-4'>
-              {songName} <span className='text-[1.5rem] my-auto mx-6'>by</span> {artistName}
-            </h1>
-            <div className='flex -my-1 -'>
-              <div className='text-[1.5rem] my-auto mx-6'>
-                {Math.floor(actualProgress / 60000)}:{((actualProgress / 1000) % 60).toFixed(0).toString().padStart(2, '0')}
-              </div>
+  if (vinyl || style === 'vinyl') {
+    const textPosition = styleSettings.textPosition || 'bottom';
+    const vinylSize = styleSettings.vinylSize || 200;
+    const labelColor = styleSettings.labelColor || '#DC2626';
 
-              <div className='h-3 w-[400px] bg-gray-300 rounded-lg overflow-none my-auto'>
-                <div
-                  style={{ width: `${progress / duration * 100}%` }}
-                  className={`rounded-lg h-full bg-gray-700`}>
+    const isPlaying = songName !== 'No track playing' && songName !== 'Waiting for music...' && songName !== 'Connect Spotify to see now playing';
+
+    return (
+      <div className="w-full h-screen flex items-center justify-center p-8" style={{ backgroundColor: 'transparent' }}>
+        <div className={`flex gap-8 items-center ${textPosition === 'right' ? 'flex-row' : textPosition === 'left' ? 'flex-row-reverse' : 'flex-col'}`}>
+          {/* Vinyl Record Container */}
+          <div className="relative flex-shrink-0" style={{ width: vinylSize, height: vinylSize }}>
+            {/* Vinyl Record */}
+            <div
+              className={`absolute inset-0 rounded-full bg-black shadow-2xl ${isPlaying ? 'animate-spin-slow' : ''}`}
+              style={{ width: vinylSize, height: vinylSize }}
+            >
+              {/* Grooves */}
+              <div className="absolute inset-[8%] rounded-full border border-gray-800/50"></div>
+              <div className="absolute inset-[16%] rounded-full border border-gray-800/40"></div>
+              <div className="absolute inset-[24%] rounded-full border border-gray-800/30"></div>
+              <div className="absolute inset-[32%] rounded-full border border-gray-800/20"></div>
+
+              {/* Center Label */}
+              <div
+                className="absolute inset-[35%] rounded-full shadow-inner flex items-center justify-center"
+                style={{
+                  background: `linear-gradient(135deg, ${labelColor}, ${labelColor}dd)`
+                }}
+              >
+                <div className="text-center text-white">
+                  <div className="text-[8px] font-bold uppercase tracking-wider opacity-90">Now</div>
+                  <div className="text-[6px] opacity-60">Playing</div>
                 </div>
               </div>
-              <div className='text-[1.5rem] my-auto mx-6'>
-                {Math.floor(duration / 60000)}:{((duration / 1000) % 60).toFixed(0).toString().padStart(2, '0')}
-              </div>
+
+              {/* Album Cover (centered - does NOT spin) */}
+              {albumCover && (
+                <div
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full overflow-hidden shadow-xl"
+                  style={{
+                    width: vinylSize * 0.55,
+                    height: vinylSize * 0.55,
+                    animation: 'none'
+                  }}
+                >
+                  <Image
+                    src={albumCover}
+                    alt="Album Cover"
+                    width={Math.round(vinylSize * 0.55)}
+                    height={Math.round(vinylSize * 0.55)}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* Song Info */}
+          <div
+            className={`text-white ${textPosition === 'bottom' ? 'text-center max-w-[400px]' : 'max-w-[300px]'}`}
+          >
+            <div className={`text-2xl font-bold mb-2 truncate ${textPosition !== 'bottom' && 'text-left'}`}>
+              {songName}
+            </div>
+            <div className={`text-base opacity-70 truncate mb-4 ${textPosition !== 'bottom' && 'text-left'}`}>
+              {artistName}
+            </div>
+
+            {/* Progress Bar */}
+            {duration > 0 && (
+              <div className="space-y-2">
+                <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
+                  <div
+                    className="h-full bg-white/80 transition-all duration-1000 rounded-full shadow-lg"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-white/50">
+                  <span>{Math.floor(progress / 60000)}:{String(Math.floor((progress % 60000) / 1000)).padStart(2, '0')}</span>
+                  <span>{Math.floor(duration / 60000)}:{String(Math.floor((duration % 60000) / 1000)).padStart(2, '0')}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-screen flex items-center justify-center" style={{ backgroundColor: 'transparent' }}>
+      <div className="flex items-center gap-6 bg-black/80 backdrop-blur-md rounded-2xl p-6 min-w-[400px]">
+        {/* Album Cover */}
+        {albumCover ? (
+          <div className="relative w-24 h-24 rounded-lg overflow-hidden shadow-lg flex-shrink-0">
+            <Image src={albumCover} alt="Album Cover" width={96} height={96} className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-24 h-24 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
+            <span className="text-4xl">🎵</span>
+          </div>
+        )}
+
+        {/* Song Info */}
+        <div className="flex-1 min-w-0">
+          <div className="text-white text-lg font-semibold truncate">{songName}</div>
+          <div className="text-gray-400 text-sm truncate">{artistName}</div>
+
+          {/* Progress Bar */}
+          {duration > 0 && (
+            <div className="mt-3 w-full h-1 bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-500 transition-all duration-1000"
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Spotify Logo */}
+        <div className="flex-shrink-0">
+          <svg className="w-6 h-6 text-green-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+        </div>
+      </div>
     </div>
-  )
+  );
 }
