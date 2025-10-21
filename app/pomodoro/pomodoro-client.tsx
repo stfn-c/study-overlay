@@ -13,14 +13,16 @@ interface PomodoroClientProps {
   pomodoroGoal?: string;
   style?: string;
   styleSettings?: any;
+  enableSound?: boolean;
 }
 
-export default function PomodoroClient({ workingTime: initialWorkingTime, restTime: initialRestTime, widgetId, initialState, pomodoroGoal: initialPomodoroGoal, style: initialStyle = 'minimal', styleSettings: initialStyleSettings = {} }: PomodoroClientProps) {
+export default function PomodoroClient({ workingTime: initialWorkingTime, restTime: initialRestTime, widgetId, initialState, pomodoroGoal: initialPomodoroGoal, style: initialStyle = 'minimal', styleSettings: initialStyleSettings = {}, enableSound: initialEnableSound = false }: PomodoroClientProps) {
   const [workingTime, setWorkingTime] = useState(initialWorkingTime);
   const [restTime, setRestTime] = useState(initialRestTime);
   const [pomodoroGoal, setPomodoroGoal] = useState(initialPomodoroGoal);
   const [style, setStyle] = useState(initialStyle);
   const [styleSettings, setStyleSettings] = useState(initialStyleSettings);
+  const [enableSound, setEnableSound] = useState(initialEnableSound);
 
   const workTime = Number(workingTime) * 60 * 1000;
   const breakTime = Number(restTime) * 60 * 1000;
@@ -39,6 +41,29 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   const supabase = createClient();
+
+  // Play ding sound
+  const playDing = useCallback(() => {
+    if (!enableSound) return;
+
+    // Create a simple pleasant ding sound using Web Audio API
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Pleasant bell-like tone
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
+
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+  }, [enableSound]);
 
   const updateWidgetState = useCallback(async (state: any) => {
     if (!widgetId) return;
@@ -81,6 +106,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
           setPomodoroGoal(data.config.pomodoroGoal);
           setStyle(data.config.pomodoroStyle || 'minimal');
           setStyleSettings(data.config.pomodoroStyleSettings || {});
+          setEnableSound(data.config.enableSound || false);
         }
 
         // Update state
@@ -134,6 +160,9 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
 
       setState(newState);
 
+      // Play ding sound on transition
+      playDing();
+
       if (goal && newPomodorosCompleted >= goal && newPomodorosCompleted > state.pomodorosCompleted) {
         setShowCelebration(true);
         setTimeout(() => setShowCelebration(false), 5000);
@@ -141,7 +170,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
 
       updateWidgetState(newState);
     }
-  }, [state, isLoading, calculateTimeLeft, workTime, breakTime, goal, updateWidgetState]);
+  }, [state, isLoading, calculateTimeLeft, workTime, breakTime, goal, updateWidgetState, playDing]);
 
   // Check for missed transitions on load (when widget was closed)
   useEffect(() => {

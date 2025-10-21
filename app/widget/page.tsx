@@ -59,6 +59,7 @@ export default async function WidgetPage({
           pomodoroGoal={widget.config.pomodoroGoal}
           style={widget.config.pomodoroStyle || 'minimal'}
           styleSettings={widget.config.pomodoroStyleSettings || {}}
+          enableSound={widget.config.enableSound || false}
           startTime=""
           initialState={widget.state}
         />

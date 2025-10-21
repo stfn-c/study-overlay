@@ -4,6 +4,7 @@ export interface FormData {
   type: OverlayType | null;
   workingTime?: string;
   restTime?: string;
+  enableSound?: boolean;
 }
 
 export interface OverlayItem {

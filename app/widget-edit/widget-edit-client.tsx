@@ -655,6 +655,32 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                   </p>
                 </div>
 
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">
+                        Sound Notifications
+                      </label>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Play a ding when sessions complete
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfig({ ...config, enableSound: !config.enableSound })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        config.enableSound ? 'bg-purple-600' : 'bg-slate-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.enableSound ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
                 {/* Visual Style Selector */}
                 <div className="space-y-3 pt-4 border-t border-slate-200">
                   <label className="text-xs font-medium text-slate-600">

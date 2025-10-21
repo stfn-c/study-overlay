@@ -179,7 +179,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
   }, []);
 
   const handleOverlaySubmit = async (data: FormData) => {
-    const { type, workingTime, restTime } = data;
+    const { type, workingTime, restTime, enableSound } = data;
 
     if (!user) {
       setShowLoginModal(true);
@@ -190,7 +190,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
 
     try {
       if (type === 'pomodoro' && workingTime && restTime) {
-        const config = { workingTime, restTime };
+        const config = { workingTime, restTime, enableSound: enableSound || false };
         const now = Date.now();
         const newOverlay: OverlayItem = {
           id: `pomodoro-${now}`,
@@ -851,34 +851,55 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                           )}
 
                           {type === 'pomodoro' && (
-                            <div className="grid gap-4 sm:grid-cols-2">
-                              <label className="space-y-2 text-sm text-slate-700">
-                                <span className="font-medium">Work duration (minutes)</span>
-                                <input
-                                  {...register('workingTime', { required: true })}
-                                  type="number"
-                                  min="1"
-                                  placeholder="25"
-                                  className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                                />
-                                {errors.workingTime && (
-                                  <span className="text-xs text-rose-500">Add how long you want to focus.</span>
-                                )}
-                              </label>
-                              <label className="space-y-2 text-sm text-slate-700">
-                                <span className="font-medium">Break duration (minutes)</span>
-                                <input
-                                  {...register('restTime', { required: true })}
-                                  type="number"
-                                  min="1"
-                                  placeholder="5"
-                                  className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                                />
-                                {errors.restTime && (
-                                  <span className="text-xs text-rose-500">Add the length of your break.</span>
-                                )}
-                              </label>
-                            </div>
+                            <>
+                              <div className="grid gap-4 sm:grid-cols-2">
+                                <label className="space-y-2 text-sm text-slate-700">
+                                  <span className="font-medium">Work duration (minutes)</span>
+                                  <input
+                                    {...register('workingTime', { required: true })}
+                                    type="number"
+                                    min="1"
+                                    placeholder="25"
+                                    className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                                  />
+                                  {errors.workingTime && (
+                                    <span className="text-xs text-rose-500">Add how long you want to focus.</span>
+                                  )}
+                                </label>
+                                <label className="space-y-2 text-sm text-slate-700">
+                                  <span className="font-medium">Break duration (minutes)</span>
+                                  <input
+                                    {...register('restTime', { required: true })}
+                                    type="number"
+                                    min="1"
+                                    placeholder="5"
+                                    className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                                  />
+                                  {errors.restTime && (
+                                    <span className="text-xs text-rose-500">Add the length of your break.</span>
+                                  )}
+                                </label>
+                              </div>
+                              <div className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3">
+                                <div>
+                                  <span className="text-sm font-medium text-slate-700">Sound notifications</span>
+                                  <p className="text-xs text-slate-500 mt-0.5">Play a ding when sessions complete</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setValue('enableSound', !watch('enableSound'))}
+                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                    watch('enableSound') ? 'bg-slate-900' : 'bg-slate-200'
+                                  }`}
+                                >
+                                  <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                      watch('enableSound') ? 'translate-x-6' : 'translate-x-1'
+                                    }`}
+                                  />
+                                </button>
+                              </div>
+                            </>
                           )}
 
                           {type === 'spotify' && (
