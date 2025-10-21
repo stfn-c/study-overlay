@@ -13,7 +13,20 @@ const nextConfig = {
   },
 
   images: {
-    domains: ['images.unsplash.com', 'res.cloudinary.com', 'i.scdn.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.scdn.co',
+      },
+    ],
   },
 }
 
