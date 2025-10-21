@@ -14,6 +14,10 @@ export const users = pgTable('users', {
   spotifyRefreshToken: text('spotify_refresh_token'),
   spotifyTokenExpiresAt: timestamp('spotify_token_expires_at', { withTimezone: true }),
 
+  // Onboarding progress tracking
+  obsInstalled: text('obs_installed'), // 'yes' | 'no' | null
+  sceneReady: text('scene_ready'), // 'yes' | 'no' | null
+
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 }, (table) => [

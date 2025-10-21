@@ -46,6 +46,7 @@ export default async function Page({
   let initialWidgets = [];
   let spotifyToken = null;
   let spotifyRefreshToken = null;
+  let onboardingProgress = { obsInstalled: null as 'yes' | 'no' | null, sceneReady: null as 'yes' | 'no' | null };
 
   if (user) {
     const { data: widgets } = await supabase
@@ -65,6 +66,13 @@ export default async function Page({
       // User hasn't connected Spotify yet
       console.log('No Spotify credentials found for user');
     }
+
+    // Get onboarding progress
+    try {
+      onboardingProgress = await usersService.getOnboardingProgress(user.id);
+    } catch (error) {
+      console.log('No onboarding progress found for user');
+    }
   }
 
   // Fetch feature requests for everyone
@@ -78,6 +86,7 @@ export default async function Page({
       user={user}
       initialWidgets={initialWidgets}
       featureRequests={featureRequests}
+      initialOnboardingProgress={onboardingProgress}
     />
   );
 }

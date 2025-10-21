@@ -85,4 +85,51 @@ export const usersService = {
 
     return newTokens.access_token;
   },
+
+  /**
+   * Save onboarding progress
+   */
+  async saveOnboardingProgress(userId: string, data: {
+    obsInstalled?: 'yes' | 'no' | null;
+    sceneReady?: 'yes' | 'no' | null;
+  }) {
+    const supabase = await createClient();
+
+    const updateData: any = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.obsInstalled !== undefined) {
+      updateData.obs_installed = data.obsInstalled;
+    }
+    if (data.sceneReady !== undefined) {
+      updateData.scene_ready = data.sceneReady;
+    }
+
+    const { error } = await supabase
+      .from('users')
+      .update(updateData)
+      .eq('id', userId);
+
+    if (error) throw error;
+  },
+
+  /**
+   * Get onboarding progress
+   */
+  async getOnboardingProgress(userId: string) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('obs_installed, scene_ready')
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+    return {
+      obsInstalled: data.obs_installed as 'yes' | 'no' | null,
+      sceneReady: data.scene_ready as 'yes' | 'no' | null,
+    };
+  },
 };

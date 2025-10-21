@@ -32,9 +32,13 @@ interface HomeProps {
   user: any;
   initialWidgets: any[];
   featureRequests: FeatureRequestWithDetails[];
+  initialOnboardingProgress?: {
+    obsInstalled: 'yes' | 'no' | null;
+    sceneReady: 'yes' | 'no' | null;
+  };
 }
 
-export default function HomePage({ host, token, refreshToken, user, initialWidgets, featureRequests }: HomeProps) {
+export default function HomePage({ host, token, refreshToken, user, initialWidgets, featureRequests, initialOnboardingProgress }: HomeProps) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -73,8 +77,8 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [hasSyncedSpotify, setHasSyncedSpotify] = useState(false);
-  const [obsInstalled, setObsInstalled] = useState<'yes' | 'no' | null>(null);
-  const [sceneReady, setSceneReady] = useState<'yes' | 'no' | null>(null);
+  const [obsInstalled, setObsInstalled] = useState<'yes' | 'no' | null>(initialOnboardingProgress?.obsInstalled || null);
+  const [sceneReady, setSceneReady] = useState<'yes' | 'no' | null>(initialOnboardingProgress?.sceneReady || null);
   const [isSaving, setIsSaving] = useState(false);
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
 
@@ -726,10 +730,36 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                                 ? "bg-emerald-500 text-white shadow-md"
                                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                             )}
-                            onClick={(event) => {
+                            onClick={async (event) => {
                               event.stopPropagation();
-                              if (step.stateKey === 'obsInstalled') setObsInstalled('yes');
-                              if (step.stateKey === 'sceneReady') setSceneReady('yes');
+                              if (step.stateKey === 'obsInstalled') {
+                                setObsInstalled('yes');
+                                if (user) {
+                                  try {
+                                    await fetch('/api/onboarding', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ obsInstalled: 'yes' })
+                                    });
+                                  } catch (error) {
+                                    console.error('Failed to save onboarding progress:', error);
+                                  }
+                                }
+                              }
+                              if (step.stateKey === 'sceneReady') {
+                                setSceneReady('yes');
+                                if (user) {
+                                  try {
+                                    await fetch('/api/onboarding', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ sceneReady: 'yes' })
+                                    });
+                                  } catch (error) {
+                                    console.error('Failed to save onboarding progress:', error);
+                                  }
+                                }
+                              }
                             }}
                           >
                             ✓ Yes, ready
@@ -742,10 +772,36 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                                 ? "bg-slate-900 text-white shadow-md"
                                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                             )}
-                            onClick={(event) => {
+                            onClick={async (event) => {
                               event.stopPropagation();
-                              if (step.stateKey === 'obsInstalled') setObsInstalled('no');
-                              if (step.stateKey === 'sceneReady') setSceneReady('no');
+                              if (step.stateKey === 'obsInstalled') {
+                                setObsInstalled('no');
+                                if (user) {
+                                  try {
+                                    await fetch('/api/onboarding', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ obsInstalled: 'no' })
+                                    });
+                                  } catch (error) {
+                                    console.error('Failed to save onboarding progress:', error);
+                                  }
+                                }
+                              }
+                              if (step.stateKey === 'sceneReady') {
+                                setSceneReady('no');
+                                if (user) {
+                                  try {
+                                    await fetch('/api/onboarding', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ sceneReady: 'no' })
+                                    });
+                                  } catch (error) {
+                                    console.error('Failed to save onboarding progress:', error);
+                                  }
+                                }
+                              }
                             }}
                           >
                             ✕ Not yet
