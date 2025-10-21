@@ -148,6 +148,41 @@ export default function TodoClient({ widgetId, style = 'minimal', styleSettings:
   const maxWidth = styleSettings.maxWidth || 600;
   const font = styleSettings.font || 'Inter';
 
+  // Background customization settings
+  const backgroundColor = styleSettings.backgroundColor || '#000000';
+  const backgroundOpacity = styleSettings.backgroundOpacity ?? 0.05;
+  const borderColor = styleSettings.borderColor || '#FFFFFF';
+  const borderOpacity = styleSettings.borderOpacity ?? 0.1;
+  const borderWidth = styleSettings.borderWidth ?? 1;
+  const borderRadius = styleSettings.borderRadius ?? 12;
+  const padding = styleSettings.padding ?? 16;
+  const enableShadow = styleSettings.enableShadow || false;
+  const shadowBlur = styleSettings.shadowBlur ?? 20;
+  const shadowColor = styleSettings.shadowColor || '#000000';
+  const shadowOpacity = styleSettings.shadowOpacity ?? 0.3;
+  const enableBackdropBlur = styleSettings.enableBackdropBlur || false;
+  const backdropBlur = styleSettings.backdropBlur ?? 8;
+
+  // Helper function to convert hex to rgba
+  const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  // Build background styles
+  const itemBackgroundStyle: React.CSSProperties = {
+    backgroundColor: hexToRgba(backgroundColor, backgroundOpacity),
+    border: `${borderWidth}px solid ${hexToRgba(borderColor, borderOpacity)}`,
+    borderRadius: `${borderRadius}px`,
+    padding: `${padding}px`,
+    ...(enableBackdropBlur && { backdropFilter: `blur(${backdropBlur}px)` }),
+    ...(enableShadow && {
+      boxShadow: `0 4px ${shadowBlur}px ${hexToRgba(shadowColor, shadowOpacity)}`
+    })
+  };
+
   const sortedTodos = [...activeList.todos].sort((a, b) => {
     // Uncompleted first
     if (a.completed !== b.completed) return a.completed ? 1 : -1;
@@ -240,12 +275,9 @@ export default function TodoClient({ widgetId, style = 'minimal', styleSettings:
               {sortedTodos.map((todo) => (
                 <div
                   key={todo.id}
-                  className="flex items-start gap-4 p-4 rounded-xl transition-all cursor-pointer hover:bg-white/5"
+                  className="flex items-start gap-4 transition-all cursor-pointer hover:brightness-110"
                   onClick={() => toggleTodo(todo.id)}
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
-                  }}
+                  style={itemBackgroundStyle}
                 >
                   {/* Checkbox */}
                   <div
@@ -387,13 +419,13 @@ export default function TodoClient({ widgetId, style = 'minimal', styleSettings:
               {sortedTodos.map((todo) => (
                 <div
                   key={todo.id}
-                  className="group relative overflow-hidden rounded-2xl transition-all cursor-pointer"
+                  className="group relative overflow-hidden transition-all cursor-pointer hover:brightness-110"
                   onClick={() => toggleTodo(todo.id)}
                   style={{
+                    ...itemBackgroundStyle,
                     background: todo.completed
-                      ? 'rgba(255, 255, 255, 0.05)'
-                      : `linear-gradient(135deg, ${accentColor}15, rgba(255, 255, 255, 0.05))`,
-                    border: `2px solid ${todo.completed ? 'rgba(255, 255, 255, 0.1)' : accentColor + '40'}`,
+                      ? itemBackgroundStyle.backgroundColor
+                      : `linear-gradient(135deg, ${accentColor}15, ${itemBackgroundStyle.backgroundColor})`,
                   }}
                 >
                   {/* Priority indicator line */}
@@ -404,7 +436,7 @@ export default function TodoClient({ widgetId, style = 'minimal', styleSettings:
                     />
                   )}
 
-                  <div className="flex items-start gap-4 p-4 pl-6">
+                  <div className="flex items-start gap-4" style={{ paddingLeft: todo.priority ? '24px' : '0' }}>
                     {/* Checkbox */}
                     <div
                       className="flex-shrink-0 mt-1"
@@ -517,11 +549,11 @@ export default function TodoClient({ widgetId, style = 'minimal', styleSettings:
               {sortedTodos.map((todo) => (
                 <div
                   key={todo.id}
-                  className="flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer hover:bg-white/5"
+                  className="flex items-center gap-3 transition-all cursor-pointer hover:brightness-110"
                   onClick={() => toggleTodo(todo.id)}
                   style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                    borderLeft: todo.priority ? `3px solid ${getPriorityColor(todo.priority)}` : '3px solid transparent'
+                    ...itemBackgroundStyle,
+                    borderLeft: todo.priority ? `3px solid ${getPriorityColor(todo.priority)}` : `3px solid transparent`
                   }}
                 >
                   {/* Compact Checkbox */}

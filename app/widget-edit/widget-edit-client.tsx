@@ -2462,6 +2462,267 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                   </div>
                 </div>
 
+                {/* Background Customization */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-slate-900">Background</h3>
+
+                  {/* Background Color & Opacity */}
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Background Color</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={config.todoStyleSettings?.backgroundColor || '#000000'}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          todoStyleSettings: { ...config.todoStyleSettings, backgroundColor: e.target.value }
+                        })}
+                        className="w-12 h-10 rounded-lg cursor-pointer border border-slate-300"
+                      />
+                      <div className="flex-1">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-slate-600">Opacity</span>
+                          <span className="text-slate-400">{Math.round((config.todoStyleSettings?.backgroundOpacity ?? 0.05) * 100)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={config.todoStyleSettings?.backgroundOpacity ?? 0.05}
+                          onChange={(e) => setConfig({
+                            ...config,
+                            todoStyleSettings: { ...config.todoStyleSettings, backgroundOpacity: Number(e.target.value) }
+                          })}
+                          className="w-full accent-pink-600"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Border Customization */}
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Border</label>
+
+                    {/* Border Color & Opacity */}
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={config.todoStyleSettings?.borderColor || '#FFFFFF'}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          todoStyleSettings: { ...config.todoStyleSettings, borderColor: e.target.value }
+                        })}
+                        className="w-12 h-10 rounded-lg cursor-pointer border border-slate-300"
+                      />
+                      <div className="flex-1">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-slate-600">Border Opacity</span>
+                          <span className="text-slate-400">{Math.round((config.todoStyleSettings?.borderOpacity ?? 0.1) * 100)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={config.todoStyleSettings?.borderOpacity ?? 0.1}
+                          onChange={(e) => setConfig({
+                            ...config,
+                            todoStyleSettings: { ...config.todoStyleSettings, borderOpacity: Number(e.target.value) }
+                          })}
+                          className="w-full accent-pink-600"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Border Width */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-slate-600 min-w-[80px]">Width</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="8"
+                        value={config.todoStyleSettings?.borderWidth ?? 1}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          todoStyleSettings: { ...config.todoStyleSettings, borderWidth: Number(e.target.value) }
+                        })}
+                        className="flex-1 accent-pink-600"
+                      />
+                      <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                        {config.todoStyleSettings?.borderWidth ?? 1}px
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Border Radius */}
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Border Radius (Rounding)</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="0"
+                        max="32"
+                        value={config.todoStyleSettings?.borderRadius ?? 12}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          todoStyleSettings: { ...config.todoStyleSettings, borderRadius: Number(e.target.value) }
+                        })}
+                        className="flex-1 accent-pink-600"
+                      />
+                      <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                        {config.todoStyleSettings?.borderRadius ?? 12}px
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Padding */}
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Padding (Inner Spacing)</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="0"
+                        max="32"
+                        value={config.todoStyleSettings?.padding ?? 16}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          todoStyleSettings: { ...config.todoStyleSettings, padding: Number(e.target.value) }
+                        })}
+                        className="flex-1 accent-pink-600"
+                      />
+                      <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                        {config.todoStyleSettings?.padding ?? 16}px
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Shadow */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-slate-600">Shadow</label>
+                      <button
+                        type="button"
+                        onClick={() => setConfig({
+                          ...config,
+                          todoStyleSettings: {
+                            ...config.todoStyleSettings,
+                            enableShadow: !config.todoStyleSettings?.enableShadow
+                          }
+                        })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          config.todoStyleSettings?.enableShadow ? 'bg-pink-600' : 'bg-slate-200'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            config.todoStyleSettings?.enableShadow ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {config.todoStyleSettings?.enableShadow && (
+                      <>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-slate-600 min-w-[80px]">Blur</span>
+                          <input
+                            type="range"
+                            min="0"
+                            max="50"
+                            value={config.todoStyleSettings?.shadowBlur ?? 20}
+                            onChange={(e) => setConfig({
+                              ...config,
+                              todoStyleSettings: { ...config.todoStyleSettings, shadowBlur: Number(e.target.value) }
+                            })}
+                            className="flex-1 accent-pink-600"
+                          />
+                          <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                            {config.todoStyleSettings?.shadowBlur ?? 20}px
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            value={config.todoStyleSettings?.shadowColor || '#000000'}
+                            onChange={(e) => setConfig({
+                              ...config,
+                              todoStyleSettings: { ...config.todoStyleSettings, shadowColor: e.target.value }
+                            })}
+                            className="w-12 h-10 rounded-lg cursor-pointer border border-slate-300"
+                          />
+                          <div className="flex-1">
+                            <div className="flex justify-between text-xs mb-1">
+                              <span className="text-slate-600">Shadow Opacity</span>
+                              <span className="text-slate-400">{Math.round((config.todoStyleSettings?.shadowOpacity ?? 0.3) * 100)}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="1"
+                              step="0.01"
+                              value={config.todoStyleSettings?.shadowOpacity ?? 0.3}
+                              onChange={(e) => setConfig({
+                                ...config,
+                                todoStyleSettings: { ...config.todoStyleSettings, shadowOpacity: Number(e.target.value) }
+                              })}
+                              className="w-full accent-pink-600"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Backdrop Blur */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="text-xs font-medium text-slate-600">Backdrop Blur</label>
+                        <p className="text-xs text-slate-500 mt-0.5">Glass effect behind items</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setConfig({
+                          ...config,
+                          todoStyleSettings: {
+                            ...config.todoStyleSettings,
+                            enableBackdropBlur: !config.todoStyleSettings?.enableBackdropBlur
+                          }
+                        })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          config.todoStyleSettings?.enableBackdropBlur ? 'bg-pink-600' : 'bg-slate-200'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            config.todoStyleSettings?.enableBackdropBlur ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {config.todoStyleSettings?.enableBackdropBlur && (
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="range"
+                          min="0"
+                          max="24"
+                          value={config.todoStyleSettings?.backdropBlur ?? 8}
+                          onChange={(e) => setConfig({
+                            ...config,
+                            todoStyleSettings: { ...config.todoStyleSettings, backdropBlur: Number(e.target.value) }
+                          })}
+                          className="flex-1 accent-pink-600"
+                        />
+                        <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                          {config.todoStyleSettings?.backdropBlur ?? 8}px
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Bulk Actions */}
                 <div className="space-y-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider">Quick Actions</h3>
