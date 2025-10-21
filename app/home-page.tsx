@@ -560,45 +560,73 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                     </div>
 
                     {isSelectionStep && stepIsActive && (
-                      <div className="mt-6 space-y-2">
-                        {(['pomodoro', 'spotify', 'local'] as OverlayType[]).map((option) => (
-                          <button
-                            key={option}
-                            type="button"
-                            className={cn(
-                              "w-full flex items-center justify-between gap-3 rounded-xl px-5 py-4 text-left transition-all duration-200",
-                              type === option
-                                ? "border-2 border-slate-900 bg-slate-900 text-white shadow-md"
-                                : "border-2 border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                            )}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setValue('type', option, { shouldValidate: true });
-                            }}
-                          >
-                            <div>
-                              <span className={cn(
-                                "font-semibold block",
-                                type === option ? "text-white" : "text-slate-900"
-                              )}>
-                                {overlayCopy[option]}
-                              </span>
-                              <span className={cn(
-                                "text-xs mt-0.5 block",
-                                type === option ? "text-white/70" : "text-slate-500"
-                              )}>
-                                {option === 'pomodoro' && "Focus timer with breaks"}
-                                {option === 'spotify' && "Show what's playing"}
-                                {option === 'local' && "Display current time"}
-                              </span>
-                            </div>
-                            {type === option && (
-                              <div className="h-5 w-5 rounded-full bg-white flex items-center justify-center animate-in zoom-in-50 duration-200">
-                                <div className="h-2 w-2 rounded-full bg-slate-900" />
+                      <div className="mt-6 space-y-4">
+                        <div className="space-y-2">
+                          {(['pomodoro', 'spotify', 'local'] as OverlayType[]).map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              className={cn(
+                                "w-full flex items-center justify-between gap-3 rounded-xl px-5 py-4 text-left transition-all duration-200",
+                                type === option
+                                  ? "border-2 border-slate-900 bg-slate-900 text-white shadow-md"
+                                  : "border-2 border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                              )}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setValue('type', option, { shouldValidate: true });
+                              }}
+                            >
+                              <div>
+                                <span className={cn(
+                                  "font-semibold block",
+                                  type === option ? "text-white" : "text-slate-900"
+                                )}>
+                                  {overlayCopy[option]}
+                                </span>
+                                <span className={cn(
+                                  "text-xs mt-0.5 block",
+                                  type === option ? "text-white/70" : "text-slate-500"
+                                )}>
+                                  {option === 'pomodoro' && "Focus timer with breaks"}
+                                  {option === 'spotify' && "Show what's playing"}
+                                  {option === 'local' && "Display current time"}
+                                </span>
                               </div>
-                            )}
-                          </button>
-                        ))}
+                              {type === option && (
+                                <div className="h-5 w-5 rounded-full bg-white flex items-center justify-center animate-in zoom-in-50 duration-200">
+                                  <div className="h-2 w-2 rounded-full bg-slate-900" />
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+
+                        {type === 'spotify' && (
+                          <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-4 text-sm">
+                            <div className="flex items-start gap-3">
+                              <span className="text-lg">⚠️</span>
+                              <div className="flex-1">
+                                <p className="font-semibold text-amber-900 mb-1">Spotify Integration Pending Approval</p>
+                                <p className="text-amber-800 mb-2">
+                                  The Spotify app is currently waiting for approval from Spotify. It won't work for new users yet, but should be ready in a couple of days.
+                                </p>
+                                <p className="text-amber-800">
+                                  <strong>Need access now?</strong> Message me on Instagram{' '}
+                                  <a
+                                    href="https://instagram.com/stfn.c"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline font-semibold hover:text-amber-900"
+                                  >
+                                    @stfn.c
+                                  </a>
+                                  {' '}and I can manually add you.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 

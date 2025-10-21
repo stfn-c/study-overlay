@@ -30,6 +30,7 @@ export function FeatureRequestList({ initialRequests, user }: FeatureRequestList
   const [expandedRequest, setExpandedRequest] = useState<string | null>(null);
   const [comments, setComments] = useState<Record<string, any[]>>({});
   const [newComment, setNewComment] = useState<Record<string, string>>({});
+  const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({});
 
   const handleUpvote = async (requestId: string) => {
     if (!user) {
@@ -100,6 +101,7 @@ export function FeatureRequestList({ initialRequests, user }: FeatureRequestList
       return;
     }
 
+    setLoadingComments(prev => ({ ...prev, [requestId]: true }));
     try {
       const response = await fetch(`/api/feature-requests/${requestId}/comments`);
       const data = await response.json();
@@ -107,6 +109,8 @@ export function FeatureRequestList({ initialRequests, user }: FeatureRequestList
       setExpandedRequest(requestId);
     } catch (error) {
       console.error('Failed to load comments:', error);
+    } finally {
+      setLoadingComments(prev => ({ ...prev, [requestId]: false }));
     }
   };
 
@@ -325,17 +329,45 @@ export function FeatureRequestList({ initialRequests, user }: FeatureRequestList
                 {/* View/Hide Comments Button */}
                 <button
                   onClick={() => loadComments(request.id)}
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all"
+                  disabled={loadingComments[request.id]}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <svg
-                    className={`w-4 h-4 transition-transform ${expandedRequest === request.id ? 'rotate-180' : ''}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                  {expandedRequest === request.id ? 'Hide' : 'View'} {request.comment_count || 0} {request.comment_count === 1 ? 'comment' : 'comments'}
+                  {loadingComments[request.id] ? (
+                    <>
+                      <svg
+                        className="w-4 h-4 animate-spin"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className={`w-4 h-4 transition-transform ${expandedRequest === request.id ? 'rotate-180' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                      {expandedRequest === request.id ? 'Hide' : 'View'} {request.comment_count || 0} {request.comment_count === 1 ? 'comment' : 'comments'}
+                    </>
+                  )}
                 </button>
 
                 {/* Comments section */}
