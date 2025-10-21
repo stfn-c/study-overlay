@@ -398,7 +398,12 @@ export function FeatureRequestList({ initialRequests, user }: FeatureRequestList
                             className="flex-1 rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
                           />
                           <Button
-                            onClick={() => handleSubmitComment(request.id)}
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleSubmitComment(request.id);
+                            }}
                             className="bg-slate-900 hover:bg-slate-800"
                           >
                             Post Comment

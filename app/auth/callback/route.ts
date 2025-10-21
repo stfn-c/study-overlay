@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   const origin = requestUrl.origin
+  const next = requestUrl.searchParams.get('next') ?? '/'
 
   // Initialize PostHog for server-side tracking
   const posthog = new PostHog(
@@ -16,7 +17,12 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { data: { session } } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (error) {
+      console.error('Error exchanging code for session:', error)
+      return NextResponse.redirect(`${origin}/?error=auth_failed`)
+    }
 
     // Check if this is a new user and send welcome email
     if (session?.user) {
@@ -78,5 +84,5 @@ export async function GET(request: Request) {
   await posthog.shutdown()
 
   // Redirect to home page after successful login
-  return NextResponse.redirect(`${origin}/`)
+  return NextResponse.redirect(new URL(next, origin))
 }
