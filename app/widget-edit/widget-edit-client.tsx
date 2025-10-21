@@ -849,6 +849,25 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                       />
                     </div>
 
+                    {/* Progress Bar Height */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-600 flex justify-between">
+                        <span>Progress Bar Height</span>
+                        <span className="text-slate-400">{config.pomodoroStyleSettings?.progressBarHeight || 8}px</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="4"
+                        max="40"
+                        value={config.pomodoroStyleSettings?.progressBarHeight || 8}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          pomodoroStyleSettings: { ...config.pomodoroStyleSettings, progressBarHeight: parseInt(e.target.value) }
+                        })}
+                        className="w-full accent-purple-600"
+                      />
+                    </div>
+
                     {/* Display Toggles */}
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-slate-600">Show/Hide Elements</label>

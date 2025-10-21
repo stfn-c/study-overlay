@@ -175,6 +175,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
   const counterSize = styleSettings.counterSize || 16;
   const layoutDirection = styleSettings.layoutDirection || 'vertical';
   const progressBarWidth = styleSettings.progressBarWidth || 300;
+  const progressBarHeight = styleSettings.progressBarHeight || 8;
 
   // MINIMAL - Clean, simple with Google Fonts
   if (style === 'minimal') {
@@ -269,7 +270,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="rounded-full overflow-hidden"
                     style={{
                       width: `${progressBarWidth}px`,
-                      height: `${timerSize * 0.04}px`,
+                      height: `${progressBarHeight}px`,
                       backgroundColor: 'rgba(255,255,255,0.2)'
                     }}
                   >
@@ -324,7 +325,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="rounded-full overflow-hidden"
                     style={{
                       width: `${progressBarWidth}px`,
-                      height: `${timerSize * 0.04}px`,
+                      height: `${progressBarHeight}px`,
                       backgroundColor: 'rgba(255,255,255,0.2)'
                     }}
                   >
@@ -459,7 +460,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="rounded-full overflow-hidden backdrop-blur-sm"
                     style={{
                       width: `${progressBarWidth}px`,
-                      height: `${timerSize * 0.06}px`,
+                      height: `${progressBarHeight}px`,
                       backgroundColor: 'rgba(255,255,255,0.2)'
                     }}
                   >
@@ -506,7 +507,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="rounded-full overflow-hidden backdrop-blur-sm"
                     style={{
                       width: `${progressBarWidth}px`,
-                      height: `${timerSize * 0.06}px`,
+                      height: `${progressBarHeight}px`,
                       backgroundColor: 'rgba(255,255,255,0.2)'
                     }}
                   >
@@ -622,7 +623,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="rounded-full overflow-hidden"
                     style={{
                       width: `${progressBarWidth}px`,
-                      height: `${timerSize * 0.03}px`,
+                      height: `${progressBarHeight}px`,
                       backgroundColor: 'rgba(255,255,255,0.1)'
                     }}
                   >
@@ -667,7 +668,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="rounded-full overflow-hidden"
                     style={{
                       width: `${progressBarWidth}px`,
-                      height: `${timerSize * 0.03}px`,
+                      height: `${progressBarHeight}px`,
                       backgroundColor: 'rgba(255,255,255,0.1)'
                     }}
                   >
@@ -788,7 +789,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="rounded-full overflow-hidden"
                     style={{
                       width: `${progressBarWidth}px`,
-                      height: `${timerSize * 0.08}px`,
+                      height: `${progressBarHeight}px`,
                       backgroundColor: 'rgba(255,255,255,0.3)',
                       boxShadow: showShadow ? '4px 4px 0px rgba(0,0,0,0.2)' : 'none',
                       border: '3px solid white'
@@ -836,7 +837,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="rounded-full overflow-hidden"
                     style={{
                       width: `${progressBarWidth}px`,
-                      height: `${timerSize * 0.08}px`,
+                      height: `${progressBarHeight}px`,
                       backgroundColor: 'rgba(255,255,255,0.3)',
                       boxShadow: showShadow ? '4px 4px 0px rgba(0,0,0,0.2)' : 'none',
                       border: '3px solid white'
