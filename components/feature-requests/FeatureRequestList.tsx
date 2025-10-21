@@ -7,6 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { FeatureRequestWithDetails } from '@/lib/services/feature-requests';
 import Link from 'next/link';
 
+// Format date consistently for SSR/client
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const year = date.getFullYear();
+  return `${month}/${day}/${year}`;
+};
+
 interface FeatureRequestListProps {
   initialRequests: FeatureRequestWithDetails[];
   user: any;
@@ -310,7 +319,7 @@ export function FeatureRequestList({ initialRequests, user }: FeatureRequestList
                 <div className="flex items-center gap-4 text-xs">
                   <span className="text-slate-500">by {user && user.id === request.user_id ? 'you' : (request.user_email?.split('@')[0] || 'stfn')}</span>
                   <span className="text-slate-500">•</span>
-                  <span className="text-slate-500">{new Date(request.created_at).toLocaleDateString()}</span>
+                  <span className="text-slate-500">{formatDate(request.created_at)}</span>
                 </div>
 
                 {/* View/Hide Comments Button */}
@@ -396,7 +405,7 @@ export function FeatureRequestList({ initialRequests, user }: FeatureRequestList
                             </div>
                             <p className="mt-2 text-xs text-slate-500">
                               <span className="font-medium">{user && user.id === comment.user_id ? 'you' : (comment.user_email?.split('@')[0] || 'stfn')}</span> •{' '}
-                              {new Date(comment.created_at).toLocaleDateString()}
+                              {formatDate(comment.created_at)}
                             </p>
                           </div>
                         ))}

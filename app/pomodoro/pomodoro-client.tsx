@@ -171,12 +171,19 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
   const paddingY = styleSettings.paddingY || 24;
   const borderRadius = styleSettings.borderRadius || 16;
   const positionY = styleSettings.positionY || 50;
-  const statusBarSize = styleSettings.statusBarSize || 24;
-  const counterSize = styleSettings.counterSize || 16;
+  const statusBarSize = styleSettings.statusBarSize || 48;
+  const counterSize = styleSettings.counterSize || 32;
   const layoutDirection = styleSettings.layoutDirection || 'vertical';
   const progressBarWidth = styleSettings.progressBarWidth || 300;
   const progressBarHeight = styleSettings.progressBarHeight || 24;
   const timeFormat = styleSettings.timeFormat || 'colon';
+
+  // Color settings
+  const timerColor = styleSettings.timerColor || '#FFFFFF';
+  const statusColor = styleSettings.statusColor || '#FFFFFF';
+  const counterColor = styleSettings.counterColor || '#FFFFFF';
+  const progressActiveColor = styleSettings.progressActiveColor;
+  const progressPassiveColor = styleSettings.progressPassiveColor;
 
   // Format time based on selected format
   const formatTime = (mins: number, secs: number) => {
@@ -198,8 +205,9 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
   if (style === 'minimal') {
     const font = styleSettings.font || 'Inter';
     const subFont = styleSettings.subFont || font;
-    const textColor = styleSettings.textColor || '#FFFFFF';
     const accentColor = styleSettings.accentColor || '#10B981';
+    const progressActive = progressActiveColor || accentColor;
+    const progressPassive = progressPassiveColor || '#FFFFFF';
 
     return (
       <>
@@ -240,7 +248,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
               className="tracking-tight"
               style={{
                 fontSize: `${timerSize * 0.8}px`,
-                color: textColor,
+                color: timerColor,
                 letterSpacing: '-0.02em',
                 fontWeight: boldTimer ? 'bold' : 'normal',
                 fontVariantNumeric: 'tabular-nums'
@@ -255,7 +263,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="font-semibold flex items-center gap-2 whitespace-nowrap"
                     style={{
                       fontSize: `${statusBarSize}px`,
-                      color: textColor,
+                      color: statusColor,
                       opacity: 0.9,
                       fontFamily: `'${subFont}', sans-serif`
                     }}
@@ -275,7 +283,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="font-medium whitespace-nowrap"
                     style={{
                       fontSize: `${counterSize}px`,
-                      color: textColor,
+                      color: counterColor,
                       opacity: 0.7,
                       fontFamily: `'${subFont}', sans-serif`,
                       fontVariantNumeric: 'tabular-nums'
@@ -290,14 +298,14 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     style={{
                       width: `${progressBarWidth}px`,
                       height: `${progressBarHeight}px`,
-                      backgroundColor: 'rgba(255,255,255,0.2)'
+                      backgroundColor: progressPassive
                     }}
                   >
                     <div
                       className="h-full transition-all duration-300"
                       style={{
                         width: `${Math.min(progress, 100)}%`,
-                        backgroundColor: accentColor
+                        backgroundColor: progressActive
                       }}
                     />
                   </div>
