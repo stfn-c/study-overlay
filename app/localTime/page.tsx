@@ -22,8 +22,9 @@ export default async function LocalTimePage({
       return (
         <LocalTimeClient
           widgetId={widgetId}
-          font={widget.config.font || 'Inter'}
-          timezone={widget.config.timezone || 'local'}
+          font={widget.config?.font || 'Inter'}
+          timezone={widget.config?.timezone || 'local'}
+          format={widget.config?.format || '24h-short'}
         />
       );
     }
@@ -32,6 +33,7 @@ export default async function LocalTimePage({
   // Legacy support or defaults
   const font = typeof params.font === 'string' ? params.font : 'Inter';
   const timezone = typeof params.timezone === 'string' ? params.timezone : 'local';
+  const format = typeof params.format === 'string' ? params.format : '24h-short';
 
-  return <LocalTimeClient font={font} timezone={timezone} />;
+  return <LocalTimeClient font={font} timezone={timezone} format={format} />;
 }

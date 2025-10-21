@@ -1764,36 +1764,147 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                   </div>
                 </div>
 
-                {/* Timezone Selection */}
+                {/* Time Format Selection */}
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-slate-600">Timezone</label>
+                  <label className="text-xs font-medium text-slate-600">Time Format</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { value: 'local', label: 'Local Time', desc: 'Your timezone' },
-                      { value: 'UTC+0', label: 'UTC+0', desc: 'London' },
-                      { value: 'UTC-5', label: 'UTC-5', desc: 'New York' },
-                      { value: 'UTC-8', label: 'UTC-8', desc: 'Los Angeles' },
-                      { value: 'UTC+1', label: 'UTC+1', desc: 'Paris' },
-                      { value: 'UTC+8', label: 'UTC+8', desc: 'Singapore' },
-                      { value: 'UTC+9', label: 'UTC+9', desc: 'Tokyo' },
-                      { value: 'UTC+10', label: 'UTC+10', desc: 'Sydney' },
-                    ].map((tz) => (
+                      { value: '24h-short', label: '24h + Day', example: '14:30 Mon' },
+                      { value: '12h-short', label: '12h + Day', example: '2:30 PM Mon' },
+                      { value: '24h-seconds', label: '24h + Seconds', example: '14:30:45 Mon' },
+                      { value: '12h-seconds', label: '12h + Seconds', example: '2:30:45 PM Mon' },
+                      { value: 'time-only-24h', label: 'Time Only (24h)', example: '14:30' },
+                      { value: 'time-only-12h', label: 'Time Only (12h)', example: '2:30 PM' },
+                      { value: 'time-date-24h', label: 'Time + Date (24h)', example: '14:30 • Jan 15' },
+                      { value: 'time-date-12h', label: 'Time + Date (12h)', example: '2:30 PM • Jan 15' },
+                      { value: 'full-24h', label: 'Full (24h)', example: 'Monday, January 15, 2025 • 14:30' },
+                      { value: 'full-12h', label: 'Full (12h)', example: 'Monday, January 15, 2025 • 2:30 PM' },
+                    ].map((fmt) => (
                       <motion.button
-                        key={tz.value}
+                        key={fmt.value}
                         type="button"
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setConfig({ ...config, timezone: tz.value })}
-                        className={`p-3 rounded-lg border-2 text-left transition-all ${
-                          (config.timezone || 'local') === tz.value
+                        onClick={() => setConfig({ ...config, format: fmt.value })}
+                        className={`p-2 rounded-lg border-2 text-left transition-all ${
+                          (config.format || '24h-short') === fmt.value
                             ? 'border-blue-600 bg-blue-50'
                             : 'border-slate-200 hover:border-slate-300'
                         }`}
                       >
-                        <div className="text-sm font-semibold">{tz.label}</div>
-                        <div className="text-xs text-slate-500">{tz.desc}</div>
+                        <div className="text-xs font-semibold">{fmt.label}</div>
+                        <div className="text-[10px] text-slate-500 mt-0.5">{fmt.example}</div>
                       </motion.button>
                     ))}
                   </div>
+                </div>
+
+                {/* Timezone Selection */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-600">Timezone</label>
+                  <select
+                    value={config.timezone || 'local'}
+                    onChange={(e) => setConfig({ ...config, timezone: e.target.value })}
+                    className="w-full p-3 rounded-lg border-2 border-slate-200 text-sm focus:border-blue-600 focus:outline-none bg-white"
+                  >
+                    <option value="local">🌍 Local Time (Your timezone)</option>
+                    <optgroup label="🌎 Americas">
+                      <option value="America/New_York">New York (EST/EDT)</option>
+                      <option value="America/Chicago">Chicago (CST/CDT)</option>
+                      <option value="America/Denver">Denver (MST/MDT)</option>
+                      <option value="America/Los_Angeles">Los Angeles (PST/PDT)</option>
+                      <option value="America/Phoenix">Phoenix (MST)</option>
+                      <option value="America/Anchorage">Anchorage (AKST/AKDT)</option>
+                      <option value="Pacific/Honolulu">Honolulu (HST)</option>
+                      <option value="America/Toronto">Toronto</option>
+                      <option value="America/Vancouver">Vancouver</option>
+                      <option value="America/Mexico_City">Mexico City</option>
+                      <option value="America/Sao_Paulo">São Paulo</option>
+                      <option value="America/Buenos_Aires">Buenos Aires</option>
+                      <option value="America/Santiago">Santiago</option>
+                      <option value="America/Lima">Lima</option>
+                      <option value="America/Bogota">Bogotá</option>
+                    </optgroup>
+                    <optgroup label="🌍 Europe">
+                      <option value="Europe/London">London (GMT/BST)</option>
+                      <option value="Europe/Paris">Paris (CET/CEST)</option>
+                      <option value="Europe/Berlin">Berlin (CET/CEST)</option>
+                      <option value="Europe/Rome">Rome (CET/CEST)</option>
+                      <option value="Europe/Madrid">Madrid (CET/CEST)</option>
+                      <option value="Europe/Amsterdam">Amsterdam (CET/CEST)</option>
+                      <option value="Europe/Brussels">Brussels (CET/CEST)</option>
+                      <option value="Europe/Vienna">Vienna (CET/CEST)</option>
+                      <option value="Europe/Stockholm">Stockholm (CET/CEST)</option>
+                      <option value="Europe/Oslo">Oslo (CET/CEST)</option>
+                      <option value="Europe/Copenhagen">Copenhagen (CET/CEST)</option>
+                      <option value="Europe/Helsinki">Helsinki (EET/EEST)</option>
+                      <option value="Europe/Athens">Athens (EET/EEST)</option>
+                      <option value="Europe/Istanbul">Istanbul (TRT)</option>
+                      <option value="Europe/Moscow">Moscow (MSK)</option>
+                      <option value="Europe/Warsaw">Warsaw (CET/CEST)</option>
+                      <option value="Europe/Prague">Prague (CET/CEST)</option>
+                      <option value="Europe/Budapest">Budapest (CET/CEST)</option>
+                      <option value="Europe/Zurich">Zurich (CET/CEST)</option>
+                      <option value="Europe/Dublin">Dublin (GMT/IST)</option>
+                      <option value="Europe/Lisbon">Lisbon (WET/WEST)</option>
+                    </optgroup>
+                    <optgroup label="🌏 Asia & Pacific">
+                      <option value="Asia/Dubai">Dubai (GST)</option>
+                      <option value="Asia/Karachi">Karachi (PKT)</option>
+                      <option value="Asia/Kolkata">Mumbai/Delhi (IST)</option>
+                      <option value="Asia/Dhaka">Dhaka (BST)</option>
+                      <option value="Asia/Bangkok">Bangkok (ICT)</option>
+                      <option value="Asia/Singapore">Singapore (SGT)</option>
+                      <option value="Asia/Hong_Kong">Hong Kong (HKT)</option>
+                      <option value="Asia/Shanghai">Shanghai (CST)</option>
+                      <option value="Asia/Tokyo">Tokyo (JST)</option>
+                      <option value="Asia/Seoul">Seoul (KST)</option>
+                      <option value="Asia/Taipei">Taipei (CST)</option>
+                      <option value="Asia/Manila">Manila (PHT)</option>
+                      <option value="Asia/Jakarta">Jakarta (WIB)</option>
+                      <option value="Australia/Sydney">Sydney (AEDT/AEST)</option>
+                      <option value="Australia/Melbourne">Melbourne (AEDT/AEST)</option>
+                      <option value="Australia/Brisbane">Brisbane (AEST)</option>
+                      <option value="Australia/Perth">Perth (AWST)</option>
+                      <option value="Pacific/Auckland">Auckland (NZDT/NZST)</option>
+                      <option value="Pacific/Fiji">Fiji (FJT)</option>
+                    </optgroup>
+                    <optgroup label="🌍 Africa & Middle East">
+                      <option value="Africa/Cairo">Cairo (EET)</option>
+                      <option value="Africa/Johannesburg">Johannesburg (SAST)</option>
+                      <option value="Africa/Lagos">Lagos (WAT)</option>
+                      <option value="Africa/Nairobi">Nairobi (EAT)</option>
+                      <option value="Asia/Jerusalem">Jerusalem (IST)</option>
+                      <option value="Asia/Riyadh">Riyadh (AST)</option>
+                    </optgroup>
+                    <optgroup label="🕐 UTC Offsets">
+                      <option value="UTC+0">UTC+0</option>
+                      <option value="UTC+1">UTC+1</option>
+                      <option value="UTC+2">UTC+2</option>
+                      <option value="UTC+3">UTC+3</option>
+                      <option value="UTC+4">UTC+4</option>
+                      <option value="UTC+5">UTC+5</option>
+                      <option value="UTC+5.5">UTC+5:30 (India)</option>
+                      <option value="UTC+6">UTC+6</option>
+                      <option value="UTC+7">UTC+7</option>
+                      <option value="UTC+8">UTC+8</option>
+                      <option value="UTC+9">UTC+9</option>
+                      <option value="UTC+9.5">UTC+9:30 (Adelaide)</option>
+                      <option value="UTC+10">UTC+10</option>
+                      <option value="UTC+11">UTC+11</option>
+                      <option value="UTC+12">UTC+12</option>
+                      <option value="UTC-1">UTC-1</option>
+                      <option value="UTC-2">UTC-2</option>
+                      <option value="UTC-3">UTC-3</option>
+                      <option value="UTC-4">UTC-4</option>
+                      <option value="UTC-5">UTC-5</option>
+                      <option value="UTC-6">UTC-6</option>
+                      <option value="UTC-7">UTC-7</option>
+                      <option value="UTC-8">UTC-8</option>
+                      <option value="UTC-9">UTC-9</option>
+                      <option value="UTC-10">UTC-10</option>
+                      <option value="UTC-11">UTC-11</option>
+                    </optgroup>
+                  </select>
                 </div>
               </motion.div>
             )}
