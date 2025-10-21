@@ -5,6 +5,7 @@ import SpotifyClient from '../spotify/spotify-client';
 import LocalTimeClient from '../localTime/local-time-client';
 import QuoteClient from '../quote/quote-client';
 import TodoClient from '../todo/todo-client';
+import StudyRoomClient from '../study-room/study-room-client';
 
 export default async function WidgetPage({
   searchParams,
@@ -97,6 +98,15 @@ export default async function WidgetPage({
           widgetId={widgetId}
           style={widget.config.todoStyle || 'minimal'}
           styleSettings={widget.config.todoStyleSettings || {}}
+        />
+      );
+
+    case 'study-room':
+      const { data: { user } } = await supabase.auth.getUser();
+      return (
+        <StudyRoomClient
+          widget={widget}
+          user={user}
         />
       );
 

@@ -320,6 +320,59 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
           widget_id: savedWidget.id,
         });
       }
+
+      if (type === 'study-room') {
+        // Create study room first
+        const roomResponse = await fetch('/api/study-room/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: data.roomName || 'Study Session',
+          }),
+        });
+
+        if (!roomResponse.ok) {
+          throw new Error('Failed to create study room');
+        }
+
+        const { room } = await roomResponse.json();
+
+        const newOverlay: OverlayItem = {
+          id: `study-room-${Date.now()}`,
+          name: room.name,
+          type: 'study-room',
+          link: '',
+          createdAt: Date.now(),
+          config: {
+            roomId: room.id,
+            inviteCode: room.invite_code,
+            style: 'compact',
+            showAvatars: true,
+            showStatus: true,
+            backgroundColor: '#1a1a1a',
+            textColor: '#ffffff',
+            accentColor: '#10b981',
+          },
+        };
+
+        const savedWidget = await widgetsService.saveWidget(newOverlay, user.id);
+        const url = `${host}/widget?widgetId=${savedWidget.id}`;
+
+        newOverlay.id = savedWidget.id;
+        newOverlay.link = url;
+
+        setLink(url);
+        setOverlays((prev) => [newOverlay, ...prev]);
+        setStepIndex(finalStepIndex);
+
+        posthog.capture('widget_created', {
+          widget_type: 'study-room',
+          widget_name: newOverlay.name,
+          widget_id: savedWidget.id,
+          room_id: room.id,
+          invite_code: room.invite_code,
+        });
+      }
     } catch (error) {
       console.error('Failed to create overlay:', error);
     } finally {
@@ -649,7 +702,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                     {isSelectionStep && stepIsActive && (
                       <div className="mt-6 space-y-4">
                         <div className="space-y-2">
-                          {(['pomodoro', 'spotify', 'local', 'quote', 'todo'] as OverlayType[]).map((option) => (
+                          {(['pomodoro', 'spotify', 'local', 'quote', 'todo', 'study-room'] as OverlayType[]).map((option) => (
                             <button
                               key={option}
                               type="button"
@@ -680,6 +733,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                                   {option === 'local' && "Display current time"}
                                   {option === 'quote' && "Daily motivation"}
                                   {option === 'todo' && "Task tracker"}
+                                  {option === 'study-room' && "Study with friends"}
                                 </span>
                               </div>
                               {type === option && (
@@ -907,7 +961,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                           <fieldset className="space-y-3">
                             <legend className="text-sm font-medium text-slate-800">Choose your overlay</legend>
                             <div className="grid gap-2 sm:grid-cols-2">
-                              {(['pomodoro', 'spotify', 'local', 'quote', 'todo'] as OverlayType[]).map((overlayType) => (
+                              {(['pomodoro', 'spotify', 'local', 'quote', 'todo', 'study-room'] as OverlayType[]).map((overlayType) => (
                                 <label
                                   key={overlayType}
                                   className={`rounded-xl border px-4 py-4 text-sm transition cursor-pointer ${
@@ -933,6 +987,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                                     {overlayType === 'local' && 'Minimal clock'}
                                     {overlayType === 'quote' && 'Daily motivation'}
                                     {overlayType === 'todo' && 'Track your tasks'}
+                                    {overlayType === 'study-room' && 'Study with friends'}
                                   </span>
                                 </label>
                               ))}
@@ -1024,6 +1079,36 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                                 </button>
                               </div>
                             </>
+                          )}
+
+                          {type === 'study-room' && (
+                            <div className="space-y-4">
+                              <label className="space-y-2 text-sm text-slate-700">
+                                <span className="font-medium">Room name</span>
+                                <input
+                                  {...register('roomName')}
+                                  type="text"
+                                  placeholder="My Study Session"
+                                  className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                                />
+                              </label>
+                              <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 text-sm">
+                                <div className="flex items-start gap-3">
+                                  <span className="text-lg">👥</span>
+                                  <div className="flex-1">
+                                    <p className="font-semibold text-emerald-900 mb-1">Study Together in Real-Time</p>
+                                    <p className="text-emerald-800 mb-2">
+                                      Create a room and share the invite code with friends. You'll all appear in the widget and can see who's actively studying (OBS running) or away.
+                                    </p>
+                                    <ul className="text-emerald-800 text-xs space-y-1">
+                                      <li>• Active status updates every 30 seconds</li>
+                                      <li>• Custom status messages and avatars</li>
+                                      <li>• Anyone can join or leave anytime</li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           )}
 
                           {type === 'spotify' && (

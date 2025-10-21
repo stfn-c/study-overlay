@@ -158,6 +158,74 @@ export const featureRequestComments = pgTable('feature_request_comments', {
   }),
 ])
 
+// Study Rooms table
+export const studyRooms = pgTable('study_rooms', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  creatorId: uuid('creator_id').notNull(), // References auth.users(id)
+  inviteCode: text('invite_code').notNull().unique(), // Shareable code like "STUDY-XY7K"
+  roomImageUrl: text('room_image_url'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => [
+  // RLS Policies - anyone can view rooms they're in, creator can delete
+  pgPolicy('anyone can view study rooms', {
+    for: 'select',
+    to: 'public',
+    using: sql`true`,
+  }),
+  pgPolicy('authenticated users can create study rooms', {
+    for: 'insert',
+    to: authenticatedRole,
+    withCheck: sql`auth.uid() = creator_id`,
+  }),
+  pgPolicy('creator can update own rooms', {
+    for: 'update',
+    to: authenticatedRole,
+    using: sql`auth.uid() = creator_id`,
+  }),
+  pgPolicy('creator can delete own rooms', {
+    for: 'delete',
+    to: authenticatedRole,
+    using: sql`auth.uid() = creator_id`,
+  }),
+])
+
+// Room Participants table
+export const roomParticipants = pgTable('room_participants', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  roomId: uuid('room_id').notNull(), // References study_rooms(id)
+  userId: uuid('user_id').notNull(), // References auth.users(id)
+  displayName: text('display_name').notNull(),
+  avatarUrl: text('avatar_url'), // Optional custom avatar
+  customStatus: text('custom_status'), // Optional status like "Studying Math 📐"
+  isActive: integer('is_active').notNull().default(1), // 1 = active, 0 = away (based on last_ping)
+  lastPingAt: timestamp('last_ping_at', { withTimezone: true }).defaultNow(),
+  joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow(),
+}, (table) => [
+  // RLS Policies
+  pgPolicy('anyone can view participants', {
+    for: 'select',
+    to: 'public',
+    using: sql`true`,
+  }),
+  pgPolicy('authenticated users can join rooms', {
+    for: 'insert',
+    to: authenticatedRole,
+    withCheck: sql`auth.uid() = user_id`,
+  }),
+  pgPolicy('participants can update own data', {
+    for: 'update',
+    to: authenticatedRole,
+    using: sql`auth.uid() = user_id`,
+  }),
+  pgPolicy('anyone in room can remove participants', {
+    for: 'delete',
+    to: authenticatedRole,
+    using: sql`true`, // Democratic removal - anyone can kick anyone
+  }),
+])
+
 // Export types for use in your app
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
@@ -169,3 +237,7 @@ export type FeatureRequestUpvote = typeof featureRequestUpvotes.$inferSelect
 export type NewFeatureRequestUpvote = typeof featureRequestUpvotes.$inferInsert
 export type FeatureRequestComment = typeof featureRequestComments.$inferSelect
 export type NewFeatureRequestComment = typeof featureRequestComments.$inferInsert
+export type StudyRoom = typeof studyRooms.$inferSelect
+export type NewStudyRoom = typeof studyRooms.$inferInsert
+export type RoomParticipant = typeof roomParticipants.$inferSelect
+export type NewRoomParticipant = typeof roomParticipants.$inferInsert
