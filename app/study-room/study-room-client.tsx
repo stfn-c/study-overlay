@@ -263,7 +263,20 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
   }
 
   const activeParticipants = participants.filter(p => p.is_active === 1);
-  const awayParticipants = participants.filter(p => p.is_active === 0);
+
+  // Filter away participants based on auto-hide settings
+  let awayParticipants = participants.filter(p => p.is_active === 0);
+
+  if (config.autoHideAwayUsers && config.showAwayUsers !== false) {
+    const hideAfterMs = ((config.hideAfterHours || 0) * 60 * 60 * 1000) + ((config.hideAfterMinutes || 5) * 60 * 1000);
+    const now = Date.now();
+
+    awayParticipants = awayParticipants.filter(p => {
+      const lastPing = new Date(p.last_ping_at).getTime();
+      const timeSinceLastPing = now - lastPing;
+      return timeSinceLastPing <= hideAfterMs;
+    });
+  }
 
   // Style configurations
   const style = config.style || 'compact';

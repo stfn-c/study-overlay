@@ -2983,6 +2983,56 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                       />
                     </button>
                   </div>
+
+                  {/* Auto-hide away users after time */}
+                  {config.showAwayUsers !== false && (
+                    <div className="space-y-2 ml-4 p-3 rounded-lg bg-white border border-slate-200">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.autoHideAwayUsers || false}
+                          onChange={(e) => setConfig({ ...config, autoHideAwayUsers: e.target.checked })}
+                          className="rounded accent-emerald-600"
+                        />
+                        <span className="font-medium">Auto-hide after inactivity</span>
+                      </label>
+
+                      {config.autoHideAwayUsers && (
+                        <div className="space-y-2 pt-2">
+                          <label className="text-xs font-medium text-slate-600">Hide after</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <input
+                                type="number"
+                                min="0"
+                                max="999"
+                                value={config.hideAfterMinutes || 5}
+                                onChange={(e) => setConfig({ ...config, hideAfterMinutes: parseInt(e.target.value) || 5 })}
+                                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+                              />
+                              <div className="text-xs text-slate-500">Minutes</div>
+                            </div>
+                            <div className="space-y-1">
+                              <input
+                                type="number"
+                                min="0"
+                                max="72"
+                                value={config.hideAfterHours || 0}
+                                onChange={(e) => setConfig({ ...config, hideAfterHours: parseInt(e.target.value) || 0 })}
+                                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+                              />
+                              <div className="text-xs text-slate-500">Hours</div>
+                            </div>
+                          </div>
+                          <div className="text-xs text-slate-500 pt-1">
+                            Will hide users who've been away for more than{' '}
+                            {config.hideAfterHours > 0 && `${config.hideAfterHours}h `}
+                            {config.hideAfterMinutes || 5}m
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
