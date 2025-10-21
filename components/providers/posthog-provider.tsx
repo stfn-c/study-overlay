@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import posthog from '@/instrumentation-client'
 
-export function PostHogPageview(): JSX.Element {
+export function PostHogPageview() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 

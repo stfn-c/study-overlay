@@ -116,7 +116,7 @@ export function WidgetCard({ widget, onCopyLink, onDelete, copiedLinkId }: Widge
       ...prev,
       isPaused: newPausedState,
       lastActionTime: now,
-      lastActionTimeLeft: timeLeft
+      lastActionTimeLeft: timeLeft ?? undefined
     }));
 
     try {
@@ -226,7 +226,7 @@ export function WidgetCard({ widget, onCopyLink, onDelete, copiedLinkId }: Widge
                 {widget.name}
               </CardTitle>
               <Badge
-                variant="secondary"
+                variant="default"
                 className={cn(
                   'text-xs font-medium',
                   widget.type === 'pomodoro' && 'bg-purple-100 text-purple-700',

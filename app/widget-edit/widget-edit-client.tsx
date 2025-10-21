@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { widgetsService } from '@/lib/services/widgets';
 import { createClient } from '@/lib/supabase/client';
+import { OverlayItem } from '@/lib/types/widget';
 
 interface WidgetEditClientProps {
   widget: any;
@@ -88,7 +89,7 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
     const now = Date.now();
 
     // Optimistic update
-    setWidgetState(prev => ({
+    setWidgetState((prev: any) => ({
       ...prev,
       isPaused: newPausedState,
       lastActionTime: now,
@@ -105,7 +106,7 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
     } catch (error) {
       console.error('Failed to toggle pause:', error);
       // Revert on error
-      setWidgetState(prev => ({ ...prev, isPaused: !newPausedState }));
+      setWidgetState((prev: any) => ({ ...prev, isPaused: !newPausedState }));
     } finally {
       setIsUpdatingPause(false);
     }
@@ -119,7 +120,7 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
 
     // Optimistically update both timeLeft and widgetState
     setTimeLeft(newTimeLeft);
-    setWidgetState(prev => ({
+    setWidgetState((prev: any) => ({
       ...prev,
       lastActionTime: now,
       lastActionTimeLeft: newTimeLeft
@@ -150,7 +151,7 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
       ? (widgetState.pomodorosCompleted || 0) + 1
       : (widgetState.pomodorosCompleted || 0);
 
-    setWidgetState(prev => ({
+    setWidgetState((prev: NonNullable<OverlayItem['state']>) => ({
       ...prev,
       isWorking: nextIsWorking,
       pomodorosCompleted: newPomodorosCompleted,
@@ -178,7 +179,7 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
     const newCount = Math.max(0, (widgetState.pomodorosCompleted || 0) + adjustment);
 
     // Optimistically update
-    setWidgetState(prev => ({
+    setWidgetState((prev: NonNullable<OverlayItem['state']>) => ({
       ...prev,
       pomodorosCompleted: newCount
     }));
@@ -191,7 +192,7 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
     } catch (error) {
       console.error('Failed to adjust pomodoro count:', error);
       // Revert on error
-      setWidgetState(prev => ({ ...prev, pomodorosCompleted: (widgetState.pomodorosCompleted || 0) }));
+      setWidgetState((prev: NonNullable<OverlayItem['state']>) => ({ ...prev, pomodorosCompleted: (widgetState.pomodorosCompleted || 0) }));
     }
   };
 
@@ -510,6 +511,50 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
               </div>
             </motion.div>
           )}
+
+          {/* OBS Link */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-slate-900">
+                OBS Browser Source
+              </h3>
+              <button
+                onClick={() => setShowHelpModal(true)}
+                className="text-xs text-slate-600 hover:text-slate-900 underline underline-offset-2"
+              >
+                Having issues?
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={widgetUrl}
+                  readOnly
+                  className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-mono text-slate-600"
+                />
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={copyUrl}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                    copied
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-slate-900 text-white hover:bg-slate-800'
+                  }`}
+                >
+                  {copied ? 'Copied!' : 'Copy'}
+                </motion.button>
+              </div>
+              <div className="text-xs text-slate-500 space-y-1">
+                <p>• Width: 1920px</p>
+                <p>• Height: 1080px</p>
+                <p>• Refresh when scene becomes active: Yes</p>
+              </div>
+              <p className="text-xs text-slate-600 pt-2">
+                Don't know how to use this? <button onClick={() => setShowHelpModal(true)} className="font-semibold text-slate-900 hover:underline">Click here for step-by-step instructions</button>
+              </p>
+            </div>
+          </div>
 
           {/* Widget Info */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
@@ -853,13 +898,13 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-slate-600 flex justify-between">
                         <span>Progress Bar Height</span>
-                        <span className="text-slate-400">{config.pomodoroStyleSettings?.progressBarHeight || 8}px</span>
+                        <span className="text-slate-400">{config.pomodoroStyleSettings?.progressBarHeight || 24}px</span>
                       </label>
                       <input
                         type="range"
                         min="4"
                         max="40"
-                        value={config.pomodoroStyleSettings?.progressBarHeight || 8}
+                        value={config.pomodoroStyleSettings?.progressBarHeight || 24}
                         onChange={(e) => setConfig({
                           ...config,
                           pomodoroStyleSettings: { ...config.pomodoroStyleSettings, progressBarHeight: parseInt(e.target.value) }

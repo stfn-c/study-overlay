@@ -16,6 +16,10 @@ export interface OverlayItem {
     isPaused?: boolean;
     currentTime?: number;
     isWorking?: boolean;
+    lastActionTime?: number;
+    lastActionTimeLeft?: number;
+    pomodorosCompleted?: number;
+    currentTrack?: any;
   };
   config?: any;
 }

@@ -175,7 +175,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
   const counterSize = styleSettings.counterSize || 16;
   const layoutDirection = styleSettings.layoutDirection || 'vertical';
   const progressBarWidth = styleSettings.progressBarWidth || 300;
-  const progressBarHeight = styleSettings.progressBarHeight || 8;
+  const progressBarHeight = styleSettings.progressBarHeight || 24;
 
   // MINIMAL - Clean, simple with Google Fonts
   if (style === 'minimal') {

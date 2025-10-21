@@ -98,7 +98,7 @@ export default function SpotifyClient({ token, refreshToken: refreshTokenString,
 
     if (response?.item) {
       const { name, artists, album, duration_ms } = response.item;
-      const artistsArray = artists.map((artist) => artist.name);
+      const artistsArray = artists.map((artist: any) => artist.name);
       const newSongName = name;
       const newArtistName = artistsArray.join(', ');
 
@@ -118,7 +118,7 @@ export default function SpotifyClient({ token, refreshToken: refreshTokenString,
         updateWidgetState({
           name: newSongName,
           artist: newArtistName,
-          album: album.name,
+          album: (album as { name: string; images: { url: string }[] }).name,
           albumCover: album.images[0]?.url,
           progress: response.progress_ms,
           duration: duration_ms
