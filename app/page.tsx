@@ -49,30 +49,39 @@ export default async function Page({
   let onboardingProgress = { obsInstalled: null as 'yes' | 'no' | null, sceneReady: null as 'yes' | 'no' | null };
 
   if (user) {
-    const { data: widgets } = await supabase
-      .from('widgets')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+    // Parallelize independent database queries for faster loading
+    const [
+      { data: widgets },
+      spotifyData,
+      onboarding
+    ] = await Promise.all([
+      supabase
+        .from('widgets')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false }),
+      // Get Spotify credentials from database
+      (async () => {
+        try {
+          const validToken = await usersService.getValidSpotifyToken(user.id);
+          const credentials = await usersService.getSpotifyCredentials(user.id);
+          return { validToken, refreshToken: credentials.spotify_refresh_token };
+        } catch (error) {
+          console.log('No Spotify credentials found for user');
+          return null;
+        }
+      })(),
+      // Get onboarding progress
+      usersService.getOnboardingProgress(user.id).catch(() => {
+        console.log('No onboarding progress found for user');
+        return { obsInstalled: null as 'yes' | 'no' | null, sceneReady: null as 'yes' | 'no' | null };
+      })
+    ]);
+
     initialWidgets = widgets || [];
-
-    // Get Spotify credentials from database
-    try {
-      const validToken = await usersService.getValidSpotifyToken(user.id);
-      const credentials = await usersService.getSpotifyCredentials(user.id);
-      spotifyToken = validToken;
-      spotifyRefreshToken = credentials.spotify_refresh_token;
-    } catch (error) {
-      // User hasn't connected Spotify yet
-      console.log('No Spotify credentials found for user');
-    }
-
-    // Get onboarding progress
-    try {
-      onboardingProgress = await usersService.getOnboardingProgress(user.id);
-    } catch (error) {
-      console.log('No onboarding progress found for user');
-    }
+    spotifyToken = spotifyData?.validToken || null;
+    spotifyRefreshToken = spotifyData?.refreshToken || null;
+    onboardingProgress = onboarding;
   }
 
   // Fetch feature requests for everyone
