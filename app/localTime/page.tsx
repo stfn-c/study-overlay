@@ -1,30 +1,37 @@
-'use client'
+import { createClient } from '@/lib/supabase/server';
+import LocalTimeClient from './local-time-client';
 
-import { useEffect, useState } from 'react'
+export default async function LocalTimePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const widgetId = typeof params.widgetId === 'string' ? params.widgetId : undefined;
 
-export default function LocalTimePage() {
-  const [displayedTime, setDisplayedTime] = useState("");
+  // If widgetId provided, fetch from database
+  if (widgetId) {
+    const supabase = await createClient();
+    const { data: widget } = await supabase
+      .from('widgets')
+      .select('*')
+      .eq('id', widgetId)
+      .single();
 
-  useEffect(() => {
-    const updateTime = () => {
-      const time = new Date();
-      const hours = time.getHours();
-      const minutes = time.getMinutes();
-      const day = time.toLocaleDateString('en-US', { weekday: 'short' });
-      const timeString = `${hours}:${minutes.toString().padStart(2, '0')} ${day}`;
-      setDisplayedTime(timeString);
-    };
+    if (widget) {
+      return (
+        <LocalTimeClient
+          widgetId={widgetId}
+          font={widget.config.font || 'Inter'}
+          timezone={widget.config.timezone || 'local'}
+        />
+      );
+    }
+  }
 
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, [])
+  // Legacy support or defaults
+  const font = typeof params.font === 'string' ? params.font : 'Inter';
+  const timezone = typeof params.timezone === 'string' ? params.timezone : 'local';
 
-  return (
-    <div className="w-full h-screen flex items-center justify-center" style={{ backgroundColor: 'transparent' }}>
-      <div className="text-8xl font-bold text-white">
-        {displayedTime || 'Loading...'}
-      </div>
-    </div>
-  )
+  return <LocalTimeClient font={font} timezone={timezone} />;
 }

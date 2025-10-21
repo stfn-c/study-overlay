@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { featureRequestsService } from '@/lib/services/feature-requests';
+import { PostHog } from 'posthog-node';
 
 export async function GET(
   request: Request,
@@ -23,6 +24,11 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const posthog = new PostHog(
+    process.env.NEXT_PUBLIC_POSTHOG_KEY!,
+    { host: process.env.NEXT_PUBLIC_POSTHOG_HOST }
+  );
+
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -42,9 +48,22 @@ export async function POST(
     }
 
     const comment = await featureRequestsService.addComment(user.id, id, content);
+
+    // Track comment creation
+    posthog.capture({
+      distinctId: user.id,
+      event: 'comment_created',
+      properties: {
+        feature_request_id: id,
+        comment_length: content.length,
+      }
+    });
+
+    await posthog.shutdown();
     return NextResponse.json(comment);
   } catch (error) {
     console.error('Failed to add comment:', error);
+    await posthog.shutdown();
     return NextResponse.json(
       { error: 'Failed to add comment' },
       { status: 500 }

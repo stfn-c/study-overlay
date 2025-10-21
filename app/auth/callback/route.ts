@@ -1,11 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { emailService } from '@/lib/services/email'
+import { PostHog } from 'posthog-node'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   const origin = requestUrl.origin
+
+  // Initialize PostHog for server-side tracking
+  const posthog = new PostHog(
+    process.env.NEXT_PUBLIC_POSTHOG_KEY!,
+    { host: process.env.NEXT_PUBLIC_POSTHOG_HOST }
+  )
 
   if (code) {
     const supabase = await createClient()
@@ -20,6 +27,26 @@ export async function GET(request: Request) {
         .single()
 
       const isNewUser = !existingUser
+
+      // Identify user in PostHog
+      posthog.identify({
+        distinctId: session.user.id,
+        properties: {
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name,
+          avatar_url: session.user.user_metadata?.avatar_url,
+        }
+      })
+
+      // Track sign in event
+      posthog.capture({
+        distinctId: session.user.id,
+        event: isNewUser ? 'user_signed_up' : 'user_signed_in',
+        properties: {
+          provider: 'google',
+          email: session.user.email,
+        }
+      })
 
       // Create user record if new
       if (isNewUser && session.user.email) {
@@ -46,6 +73,9 @@ export async function GET(request: Request) {
       }
     }
   }
+
+  // Flush PostHog events before redirecting
+  await posthog.shutdown()
 
   // Redirect to home page after successful login
   return NextResponse.redirect(`${origin}/`)
