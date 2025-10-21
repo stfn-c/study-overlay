@@ -225,16 +225,17 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 fontSize: `${timerSize * 0.8}px`,
                 color: textColor,
                 letterSpacing: '-0.02em',
-                fontWeight: boldTimer ? 'bold' : 'normal'
+                fontWeight: boldTimer ? 'bold' : 'normal',
+                fontVariantNumeric: 'tabular-nums'
               }}
             >
               {minutes}:{seconds.toString().padStart(2, '0')}
             </div>
             {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 items-start">
                 {showStatus && (
                   <div
-                    className="font-semibold flex items-center gap-2"
+                    className="font-semibold flex items-center gap-2 whitespace-nowrap"
                     style={{
                       fontSize: `${statusBarSize}px`,
                       color: textColor,
@@ -254,12 +255,13 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 )}
                 {showCounter && (state.pomodorosCompleted > 0 || goal) && (
                   <div
-                    className="font-medium"
+                    className="font-medium whitespace-nowrap"
                     style={{
                       fontSize: `${counterSize}px`,
                       color: textColor,
                       opacity: 0.7,
-                      fontFamily: `'${subFont}', sans-serif`
+                      fontFamily: `'${subFont}', sans-serif`,
+                      fontVariantNumeric: 'tabular-nums'
                     }}
                   >
                     {goal ? `${state.pomodorosCompleted} / ${goal} completed` : `${state.pomodorosCompleted} completed`}
@@ -424,16 +426,17 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 WebkitTextFillColor: 'transparent',
                 textShadow: `0 0 80px ${color1}40`,
                 filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))',
-                fontWeight: boldTimer ? '900' : 'normal'
+                fontWeight: boldTimer ? '900' : 'normal',
+                fontVariantNumeric: 'tabular-nums'
               }}
             >
               {minutes}:{seconds.toString().padStart(2, '0')}
             </div>
             {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 items-start">
                 {showStatus && (
                   <div
-                    className="font-black uppercase tracking-widest inline-block px-6 py-3 rounded-xl text-white"
+                    className="font-black uppercase tracking-widest inline-block px-6 py-3 rounded-xl text-white whitespace-nowrap"
                     style={{
                       fontSize: `${statusBarSize}px`,
                       background: `linear-gradient(135deg, ${color1}, ${color2})`,
@@ -446,10 +449,11 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 )}
                 {showCounter && (state.pomodorosCompleted > 0 || goal) && (
                   <div
-                    className="font-bold text-white"
+                    className="font-bold text-white whitespace-nowrap"
                     style={{
                       fontSize: `${counterSize}px`,
-                      fontFamily: `'${subFont}', sans-serif`
+                      fontFamily: `'${subFont}', sans-serif`,
+                      fontVariantNumeric: 'tabular-nums'
                     }}
                   >
                     {goal ? `${state.pomodorosCompleted} / ${goal} DONE` : `${state.pomodorosCompleted} DONE`}
@@ -589,16 +593,17 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 fontSize: `${timerSize * 1.1}px`,
                 textShadow: showGlow ? `0 0 ${glowIntensity}px ${glowColor}, 0 0 ${glowIntensity * 2}px ${glowColor}60` : 'none',
                 letterSpacing: '0.05em',
-                fontWeight: boldTimer ? 'bold' : '300'
+                fontWeight: boldTimer ? 'bold' : '300',
+                fontVariantNumeric: 'tabular-nums'
               }}
             >
               {minutes}:{seconds.toString().padStart(2, '0')}
             </div>
             {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 items-start">
                 {showStatus && (
                   <div
-                    className="font-light text-white/90 tracking-widest uppercase"
+                    className="font-light text-white/90 tracking-widest uppercase whitespace-nowrap"
                     style={{
                       fontSize: `${statusBarSize}px`,
                       fontFamily: `'${subFont}', sans-serif`
@@ -609,10 +614,11 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 )}
                 {showCounter && (state.pomodorosCompleted > 0 || goal) && (
                   <div
-                    className="font-light text-white/70"
+                    className="font-light text-white/70 whitespace-nowrap"
                     style={{
                       fontSize: `${counterSize}px`,
-                      fontFamily: `'${subFont}', sans-serif`
+                      fontFamily: `'${subFont}', sans-serif`,
+                      fontVariantNumeric: 'tabular-nums'
                     }}
                   >
                     {goal ? `${state.pomodorosCompleted} of ${goal}` : `${state.pomodorosCompleted}`}
@@ -753,16 +759,17 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 WebkitTextStroke: `${strokeWidth}px white`,
                 textShadow: showShadow ? '6px 6px 0px rgba(0,0,0,0.3)' : 'none',
                 letterSpacing: '-0.05em',
-                fontWeight: boldTimer ? '900' : 'normal'
+                fontWeight: boldTimer ? '900' : 'normal',
+                fontVariantNumeric: 'tabular-nums'
               }}
             >
               {minutes}:{seconds.toString().padStart(2, '0')}
             </div>
             {layoutDirection === 'horizontal' && (showStatus || showCounter || showProgress) && (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 items-start">
                 {showStatus && (
                   <div
-                    className="inline-block px-8 py-4 font-black uppercase tracking-wider text-white rounded-2xl"
+                    className="inline-block px-8 py-4 font-black uppercase tracking-wider text-white rounded-2xl whitespace-nowrap"
                     style={{
                       fontSize: `${statusBarSize}px`,
                       backgroundColor: accentColor,
@@ -778,7 +785,8 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="font-black text-white"
                     style={{
                       fontSize: `${counterSize}px`,
-                      fontFamily: `'${subFont}', sans-serif`
+                      fontFamily: `'${subFont}', sans-serif`,
+                      fontVariantNumeric: 'tabular-nums'
                     }}
                   >
                     {goal ? `${state.pomodorosCompleted}/${goal} DONE` : `${state.pomodorosCompleted} DONE`}
@@ -790,7 +798,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     style={{
                       width: `${progressBarWidth}px`,
                       height: `${progressBarHeight}px`,
-                      backgroundColor: 'rgba(255,255,255,0.3)',
+                      backgroundColor: 'rgba(0,0,0,0.2)',
                       boxShadow: showShadow ? '4px 4px 0px rgba(0,0,0,0.2)' : 'none',
                       border: '3px solid white'
                     }}
@@ -810,7 +818,7 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
               <>
                 {showStatus && (
                   <div
-                    className="inline-block px-8 py-4 font-black uppercase tracking-wider text-white rounded-2xl"
+                    className="inline-block px-8 py-4 font-black uppercase tracking-wider text-white rounded-2xl whitespace-nowrap"
                     style={{
                       fontSize: `${statusBarSize}px`,
                       backgroundColor: accentColor,
@@ -826,7 +834,8 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                     className="font-black text-white"
                     style={{
                       fontSize: `${counterSize}px`,
-                      fontFamily: `'${subFont}', sans-serif`
+                      fontFamily: `'${subFont}', sans-serif`,
+                      fontVariantNumeric: 'tabular-nums'
                     }}
                   >
                     {goal ? `${state.pomodorosCompleted}/${goal} DONE` : `${state.pomodorosCompleted} DONE`}
@@ -834,11 +843,11 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
                 )}
                 {showProgress && (
                   <div
-                    className="rounded-full overflow-hidden"
+                    className="rounded-full overflow-hidden mx-auto"
                     style={{
                       width: `${progressBarWidth}px`,
                       height: `${progressBarHeight}px`,
-                      backgroundColor: 'rgba(255,255,255,0.3)',
+                      backgroundColor: 'rgba(0,0,0,0.2)',
                       boxShadow: showShadow ? '4px 4px 0px rgba(0,0,0,0.2)' : 'none',
                       border: '3px solid white'
                     }}
