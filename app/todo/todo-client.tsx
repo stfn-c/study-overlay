@@ -148,21 +148,6 @@ export default function TodoClient({ widgetId, style = 'minimal', styleSettings:
   const maxWidth = styleSettings.maxWidth || 600;
   const font = styleSettings.font || 'Inter';
 
-  // Background customization settings
-  const backgroundColor = styleSettings.backgroundColor || '#000000';
-  const backgroundOpacity = styleSettings.backgroundOpacity ?? 0.05;
-  const borderColor = styleSettings.borderColor || '#FFFFFF';
-  const borderOpacity = styleSettings.borderOpacity ?? 0.1;
-  const borderWidth = styleSettings.borderWidth ?? 1;
-  const borderRadius = styleSettings.borderRadius ?? 12;
-  const padding = styleSettings.padding ?? 16;
-  const enableShadow = styleSettings.enableShadow || false;
-  const shadowBlur = styleSettings.shadowBlur ?? 20;
-  const shadowColor = styleSettings.shadowColor || '#000000';
-  const shadowOpacity = styleSettings.shadowOpacity ?? 0.3;
-  const enableBackdropBlur = styleSettings.enableBackdropBlur || false;
-  const backdropBlur = styleSettings.backdropBlur ?? 8;
-
   // Helper function to convert hex to rgba
   const hexToRgba = (hex: string, alpha: number) => {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -171,17 +156,30 @@ export default function TodoClient({ widgetId, style = 'minimal', styleSettings:
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
 
-  // Build background styles
-  const itemBackgroundStyle: React.CSSProperties = {
-    backgroundColor: hexToRgba(backgroundColor, backgroundOpacity),
-    border: `${borderWidth}px solid ${hexToRgba(borderColor, borderOpacity)}`,
-    borderRadius: `${borderRadius}px`,
-    padding: `${padding}px`,
-    ...(enableBackdropBlur && { backdropFilter: `blur(${backdropBlur}px)` }),
-    ...(enableShadow && {
-      boxShadow: `0 4px ${shadowBlur}px ${hexToRgba(shadowColor, shadowOpacity)}`
-    })
+  // Background customization settings - check if enabled
+  const enableBackgroundCustomization = styleSettings.enableBackgroundCustomization || false;
+
+  // Build background styles - default styles when disabled
+  const defaultBackgroundStyle: React.CSSProperties = {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    padding: '16px'
   };
+
+  // Custom background styles when enabled
+  const customBackgroundStyle: React.CSSProperties = enableBackgroundCustomization ? {
+    backgroundColor: hexToRgba(styleSettings.backgroundColor || '#000000', styleSettings.backgroundOpacity ?? 0.05),
+    border: `${styleSettings.borderWidth ?? 1}px solid ${hexToRgba(styleSettings.borderColor || '#FFFFFF', styleSettings.borderOpacity ?? 0.1)}`,
+    borderRadius: `${styleSettings.borderRadius ?? 12}px`,
+    padding: `${styleSettings.padding ?? 16}px`,
+    ...(styleSettings.enableBackdropBlur && { backdropFilter: `blur(${styleSettings.backdropBlur ?? 8}px)` }),
+    ...(styleSettings.enableShadow && {
+      boxShadow: `0 4px ${styleSettings.shadowBlur ?? 20}px ${hexToRgba(styleSettings.shadowColor || '#000000', styleSettings.shadowOpacity ?? 0.3)}`
+    })
+  } : defaultBackgroundStyle;
+
+  const itemBackgroundStyle = customBackgroundStyle;
 
   const sortedTodos = [...activeList.todos].sort((a, b) => {
     // Uncompleted first

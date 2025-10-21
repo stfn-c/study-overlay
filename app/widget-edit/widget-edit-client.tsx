@@ -2464,10 +2464,36 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
 
                 {/* Background Customization */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-slate-900">Background</h3>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900">Background Customization</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Customize task item backgrounds</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfig({
+                        ...config,
+                        todoStyleSettings: {
+                          ...config.todoStyleSettings,
+                          enableBackgroundCustomization: !config.todoStyleSettings?.enableBackgroundCustomization
+                        }
+                      })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        config.todoStyleSettings?.enableBackgroundCustomization ? 'bg-pink-600' : 'bg-slate-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.todoStyleSettings?.enableBackgroundCustomization ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
 
-                  {/* Background Color & Opacity */}
-                  <div className="space-y-3">
+                  {config.todoStyleSettings?.enableBackgroundCustomization && (
+                    <>
+                      {/* Background Color & Opacity */}
+                      <div className="space-y-3">
                     <label className="text-xs font-medium text-slate-600">Background Color</label>
                     <div className="flex items-center gap-3">
                       <input
@@ -2721,6 +2747,8 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                       </div>
                     )}
                   </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Bulk Actions */}
@@ -2775,6 +2803,134 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                     >
                       Clear All Tasks
                     </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Study Room Widget Settings */}
+            {widget.type === 'study-room' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-6"
+              >
+                {/* Room Info */}
+                <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200">
+                  <div className="flex items-start gap-3 mb-3">
+                    <span className="text-2xl">👥</span>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-emerald-900 mb-1">Room Information</h3>
+                      <p className="text-sm text-emerald-800">
+                        Share this invite code with friends to study together!
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 border border-emerald-200">
+                    <div className="text-xs text-slate-600 mb-1">Invite Code</div>
+                    <div className="font-mono font-bold text-lg text-emerald-600">
+                      {config.inviteCode || 'STUDY-XXXX'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visual Settings */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider">Appearance</h3>
+
+                  {/* Style */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-slate-600">Layout Style</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {['compact', 'spacious'].map((styleOption) => (
+                        <button
+                          key={styleOption}
+                          type="button"
+                          onClick={() => setConfig({ ...config, style: styleOption })}
+                          className={`px-4 py-3 rounded-lg text-sm transition-all ${
+                            config.style === styleOption
+                              ? 'bg-emerald-600 text-white font-medium'
+                              : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
+                          }`}
+                        >
+                          {styleOption.charAt(0).toUpperCase() + styleOption.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Colors */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-600">Background</label>
+                      <input
+                        type="color"
+                        value={config.backgroundColor || '#1a1a1a'}
+                        onChange={(e) => setConfig({ ...config, backgroundColor: e.target.value })}
+                        className="w-full h-10 rounded-lg cursor-pointer border border-slate-300"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-600">Text Color</label>
+                      <input
+                        type="color"
+                        value={config.textColor || '#ffffff'}
+                        onChange={(e) => setConfig({ ...config, textColor: e.target.value })}
+                        className="w-full h-10 rounded-lg cursor-pointer border border-slate-300"
+                      />
+                    </div>
+                    <div className="space-y-2 col-span-2">
+                      <label className="text-xs font-medium text-slate-600">Accent Color</label>
+                      <input
+                        type="color"
+                        value={config.accentColor || '#10b981'}
+                        onChange={(e) => setConfig({ ...config, accentColor: e.target.value })}
+                        className="w-full h-10 rounded-lg cursor-pointer border border-slate-300"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Toggle Options */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <div>
+                        <div className="text-xs font-medium text-slate-700">Show Avatars</div>
+                        <div className="text-xs text-slate-500">Display profile pictures</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setConfig({ ...config, showAvatars: !config.showAvatars })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          config.showAvatars !== false ? 'bg-emerald-600' : 'bg-slate-300'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            config.showAvatars !== false ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <div>
+                        <div className="text-xs font-medium text-slate-700">Show Status</div>
+                        <div className="text-xs text-slate-500">Display custom status messages</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setConfig({ ...config, showStatus: !config.showStatus })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          config.showStatus !== false ? 'bg-emerald-600' : 'bg-slate-300'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            config.showStatus !== false ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -2862,6 +3018,26 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 mt-0.5">•</span>
                     <span>Use Quick Actions to manage tasks in bulk</span>
+                  </li>
+                </>
+              )}
+              {widget.type === 'study-room' && (
+                <>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Share your invite code to study together</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Active status shows who's currently in OBS</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Status updates every 5 seconds automatically</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Customize colors to match your stream aesthetic</span>
                   </li>
                 </>
               )}
