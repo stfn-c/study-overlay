@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 interface LocalTimeClientProps {
   widgetId?: string;
@@ -11,12 +12,44 @@ interface LocalTimeClientProps {
 
 export default function LocalTimeClient({
   widgetId,
-  font = 'Inter',
-  timezone = 'local',
-  format = '24h-short'
+  font: initialFont = 'Inter',
+  timezone: initialTimezone = 'local',
+  format: initialFormat = '24h-short'
 }: LocalTimeClientProps) {
   const [displayedTime, setDisplayedTime] = useState("");
   const [fontLoaded, setFontLoaded] = useState(false);
+  const [font, setFont] = useState(initialFont);
+  const [timezone, setTimezone] = useState(initialTimezone);
+  const [format, setFormat] = useState(initialFormat);
+
+  const supabase = createClient();
+
+  // Fetch config from database and poll for updates
+  useEffect(() => {
+    if (!widgetId) return;
+
+    const fetchConfig = async () => {
+      const { data, error } = await supabase
+        .from('widgets')
+        .select('config')
+        .eq('id', widgetId)
+        .single();
+
+      if (data?.config) {
+        setFont(data.config.font || initialFont);
+        setTimezone(data.config.timezone || initialTimezone);
+        setFormat(data.config.format || initialFormat);
+      }
+    };
+
+    // Fetch immediately
+    fetchConfig();
+
+    // Poll every 2 seconds for config updates
+    const interval = setInterval(fetchConfig, 2000);
+
+    return () => clearInterval(interval);
+  }, [widgetId, supabase, initialFont, initialTimezone, initialFormat]);
 
   // Load Google Font dynamically
   useEffect(() => {
