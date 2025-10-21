@@ -8,7 +8,7 @@ interface LocalTimeClientProps {
   timezone?: string;
 }
 
-export default function LocalTimeClient({ font = 'Inter', timezone = 'local' }: LocalTimeClientProps) {
+export default function LocalTimeClient({ widgetId, font = 'Inter', timezone = 'local' }: LocalTimeClientProps) {
   const [displayedTime, setDisplayedTime] = useState("");
 
   useEffect(() => {

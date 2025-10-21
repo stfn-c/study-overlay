@@ -1724,6 +1724,79 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                 )}
               </motion.div>
             )}
+
+            {/* Local Time Settings */}
+            {widget.type === 'local' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-4"
+              >
+                {/* Font Selection */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-600">Font</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      'Inter',
+                      'Poppins',
+                      'Space Grotesk',
+                      'Outfit',
+                      'Roboto',
+                      'Montserrat',
+                      'Playfair Display',
+                      'Raleway',
+                    ].map((fontOption) => (
+                      <motion.button
+                        key={fontOption}
+                        type="button"
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setConfig({ ...config, font: fontOption })}
+                        className={`p-2 rounded-lg border-2 text-center transition-all ${
+                          (config.font || 'Inter') === fontOption
+                            ? 'border-blue-600 bg-blue-50'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                        style={{ fontFamily: fontOption }}
+                      >
+                        <div className="text-sm font-semibold">{fontOption}</div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Timezone Selection */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-600">Timezone</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: 'local', label: 'Local Time', desc: 'Your timezone' },
+                      { value: 'UTC+0', label: 'UTC+0', desc: 'London' },
+                      { value: 'UTC-5', label: 'UTC-5', desc: 'New York' },
+                      { value: 'UTC-8', label: 'UTC-8', desc: 'Los Angeles' },
+                      { value: 'UTC+1', label: 'UTC+1', desc: 'Paris' },
+                      { value: 'UTC+8', label: 'UTC+8', desc: 'Singapore' },
+                      { value: 'UTC+9', label: 'UTC+9', desc: 'Tokyo' },
+                      { value: 'UTC+10', label: 'UTC+10', desc: 'Sydney' },
+                    ].map((tz) => (
+                      <motion.button
+                        key={tz.value}
+                        type="button"
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setConfig({ ...config, timezone: tz.value })}
+                        className={`p-3 rounded-lg border-2 text-left transition-all ${
+                          (config.timezone || 'local') === tz.value
+                            ? 'border-blue-600 bg-blue-50'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="text-sm font-semibold">{tz.label}</div>
+                        <div className="text-xs text-slate-500">{tz.desc}</div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* Quick Tips */}

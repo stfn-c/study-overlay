@@ -769,6 +769,32 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                             {typeError && <p className="text-xs text-rose-500">{typeError}</p>}
                           </fieldset>
 
+                          {type === 'spotify' && (
+                            <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-4 text-sm">
+                              <div className="flex items-start gap-3">
+                                <span className="text-lg">⚠️</span>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-amber-900 mb-1">Spotify Integration Pending Approval</p>
+                                  <p className="text-amber-800 mb-2">
+                                    The Spotify app is currently waiting for approval from Spotify. It won't work for new users yet, but should be ready in a couple of days.
+                                  </p>
+                                  <p className="text-amber-800">
+                                    <strong>Need access now?</strong> Message me on Instagram{' '}
+                                    <a
+                                      href="https://instagram.com/stfn.c"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="underline font-semibold hover:text-amber-900"
+                                    >
+                                      @stfn.c
+                                    </a>
+                                    {' '}and I can manually add you.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           {type === 'pomodoro' && (
                             <div className="grid gap-4 sm:grid-cols-2">
                               <label className="space-y-2 text-sm text-slate-700">
