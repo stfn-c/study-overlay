@@ -765,6 +765,14 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                                   </span>
                                 </label>
                               ))}
+
+                              {/* Coming Soon Card */}
+                              <div className="rounded-xl border-2 border-dashed border-slate-300 px-4 py-4 text-sm bg-slate-50/50 cursor-not-allowed opacity-75">
+                                <span className="font-semibold text-slate-600">More coming soon</span>
+                                <span className="mt-1 block text-xs text-slate-500">
+                                  Got ideas? Add them below! 👇
+                                </span>
+                              </div>
                             </div>
                             {typeError && <p className="text-xs text-rose-500">{typeError}</p>}
                           </fieldset>
