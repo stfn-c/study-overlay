@@ -1934,6 +1934,159 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                 </div>
               </motion.div>
             )}
+
+            {/* Quote Widget Settings */}
+            {widget.type === 'quote' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-6"
+              >
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-slate-900">Quote Style</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'minimal', label: 'Minimal', desc: 'Clean & simple' },
+                      { value: 'serif', label: 'Serif', desc: 'Classic elegance' },
+                      { value: 'modern', label: 'Modern', desc: 'Bold & contemporary' },
+                    ].map((styleOption) => (
+                      <motion.button
+                        key={styleOption.value}
+                        type="button"
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setConfig({ ...config, quoteStyle: styleOption.value })}
+                        className={`p-3 rounded-xl border-2 text-left transition-all ${
+                          (config.quoteStyle || 'minimal') === styleOption.value
+                            ? 'border-amber-600 bg-amber-600 text-white shadow-lg'
+                            : 'border-slate-200 bg-white hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="text-sm font-semibold">{styleOption.label}</div>
+                        <div className={`text-xs mt-0.5 ${
+                          (config.quoteStyle || 'minimal') === styleOption.value ? 'text-white/80' : 'text-slate-500'
+                        }`}>
+                          {styleOption.desc}
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-slate-900">Appearance</h3>
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Quote Text Size</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="24"
+                        max="72"
+                        value={config.quoteStyleSettings?.fontSize || 48}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          quoteStyleSettings: { ...config.quoteStyleSettings, fontSize: Number(e.target.value) }
+                        })}
+                        className="flex-1"
+                      />
+                      <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                        {config.quoteStyleSettings?.fontSize || 48}px
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Author Text Size</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="14"
+                        max="36"
+                        value={config.quoteStyleSettings?.authorSize || 24}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          quoteStyleSettings: { ...config.quoteStyleSettings, authorSize: Number(e.target.value) }
+                        })}
+                        className="flex-1"
+                      />
+                      <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                        {config.quoteStyleSettings?.authorSize || 24}px
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Max Width</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="400"
+                        max="1200"
+                        step="50"
+                        value={config.quoteStyleSettings?.maxWidth || 800}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          quoteStyleSettings: { ...config.quoteStyleSettings, maxWidth: Number(e.target.value) }
+                        })}
+                        className="flex-1"
+                      />
+                      <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                        {config.quoteStyleSettings?.maxWidth || 800}px
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Text Alignment</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {['left', 'center', 'right'].map((align) => (
+                        <button
+                          key={align}
+                          type="button"
+                          onClick={() => setConfig({
+                            ...config,
+                            quoteStyleSettings: { ...config.quoteStyleSettings, alignment: align }
+                          })}
+                          className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
+                            (config.quoteStyleSettings?.alignment || 'center') === align
+                              ? 'bg-amber-600 text-white'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          {align.charAt(0).toUpperCase() + align.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Show Quotation Marks</label>
+                      <p className="text-xs text-slate-500 mt-0.5">Display "" around the quote</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfig({
+                        ...config,
+                        quoteStyleSettings: {
+                          ...config.quoteStyleSettings,
+                          showQuotes: config.quoteStyleSettings?.showQuotes === false ? true : false
+                        }
+                      })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        config.quoteStyleSettings?.showQuotes !== false ? 'bg-amber-600' : 'bg-slate-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.quoteStyleSettings?.showQuotes !== false ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* Quick Tips */}
@@ -1977,6 +2130,22 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 mt-0.5">•</span>
                     <span>Clean minimal design for any stream</span>
+                  </li>
+                </>
+              )}
+              {widget.type === 'quote' && (
+                <>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Quote changes automatically every day</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>20 curated motivational study quotes</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Try different styles for different vibes</span>
                   </li>
                 </>
               )}

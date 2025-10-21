@@ -231,7 +231,8 @@ export function WidgetCard({ widget, onCopyLink, onDelete, copiedLinkId }: Widge
                   'text-xs font-medium',
                   widget.type === 'pomodoro' && 'bg-purple-100 text-purple-700',
                   widget.type === 'spotify' && 'bg-green-100 text-green-700',
-                  widget.type === 'local' && 'bg-blue-100 text-blue-700'
+                  widget.type === 'local' && 'bg-blue-100 text-blue-700',
+                  widget.type === 'quote' && 'bg-amber-100 text-amber-700'
                 )}
               >
                 {overlayTag(widget.type)}
@@ -370,6 +371,18 @@ export function WidgetCard({ widget, onCopyLink, onDelete, copiedLinkId }: Widge
                     day: 'numeric'
                   })}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* Quote Widget Preview */}
+          {widget.type === 'quote' && (
+            <div className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg border border-amber-200">
+              <div className="text-center">
+                <p className="text-sm italic text-amber-900 mb-2 line-clamp-2">
+                  "Daily motivational quote changes every day"
+                </p>
+                <p className="text-xs text-amber-700 font-semibold">— Quote of the Day</p>
               </div>
             </div>
           )}

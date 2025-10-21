@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import PomodoroClient from '../pomodoro/pomodoro-client';
 import SpotifyClient from '../spotify/spotify-client';
 import LocalTimeClient from '../localTime/local-time-client';
+import QuoteClient from '../quote/quote-client';
 
 export default async function WidgetPage({
   searchParams,
@@ -79,6 +80,15 @@ export default async function WidgetPage({
 
     case 'local':
       return <LocalTimeClient widgetId={widgetId} />;
+
+    case 'quote':
+      return (
+        <QuoteClient
+          widgetId={widgetId}
+          style={widget.config.quoteStyle || 'minimal'}
+          styleSettings={widget.config.quoteStyleSettings || {}}
+        />
+      );
 
     default:
       return (

@@ -252,6 +252,33 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
           widget_id: savedWidget.id,
         });
       }
+
+      if (type === 'quote') {
+        const newOverlay: OverlayItem = {
+          id: `quote-${Date.now()}`,
+          name: overlayCopy.quote,
+          type: 'quote',
+          link: '',
+          createdAt: Date.now(),
+          config: {},
+        };
+
+        const savedWidget = await widgetsService.saveWidget(newOverlay, user.id);
+        const url = `${host}/widget?widgetId=${savedWidget.id}`;
+
+        newOverlay.id = savedWidget.id;
+        newOverlay.link = url;
+
+        setLink(url);
+        setOverlays((prev) => [newOverlay, ...prev]);
+        setStepIndex(finalStepIndex);
+
+        posthog.capture('widget_created', {
+          widget_type: 'quote',
+          widget_name: newOverlay.name,
+          widget_id: savedWidget.id,
+        });
+      }
     } catch (error) {
       console.error('Failed to create overlay:', error);
     } finally {
@@ -390,7 +417,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
               <div className="pt-3 border-t border-slate-200">
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">Available overlays</p>
                 <p className="text-sm text-slate-700">
-                  Pomodoro timer • Spotify now-playing • Local time
+                  Pomodoro timer • Spotify now-playing • Local time • Daily quotes
                 </p>
               </div>
               <div className="pt-3 border-t border-slate-200">
@@ -581,7 +608,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                     {isSelectionStep && stepIsActive && (
                       <div className="mt-6 space-y-4">
                         <div className="space-y-2">
-                          {(['pomodoro', 'spotify', 'local'] as OverlayType[]).map((option) => (
+                          {(['pomodoro', 'spotify', 'local', 'quote'] as OverlayType[]).map((option) => (
                             <button
                               key={option}
                               type="button"
@@ -610,6 +637,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                                   {option === 'pomodoro' && "Focus timer with breaks"}
                                   {option === 'spotify' && "Show what's playing"}
                                   {option === 'local' && "Display current time"}
+                                  {option === 'quote' && "Daily motivation"}
                                 </span>
                               </div>
                               {type === option && (
@@ -784,8 +812,8 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                         <form onSubmit={handleSubmit(handleOverlaySubmit)} className="space-y-6">
                           <fieldset className="space-y-3">
                             <legend className="text-sm font-medium text-slate-800">Choose your overlay</legend>
-                            <div className="grid gap-2 sm:grid-cols-3">
-                              {(['pomodoro', 'spotify', 'local'] as OverlayType[]).map((overlayType) => (
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {(['pomodoro', 'spotify', 'local', 'quote'] as OverlayType[]).map((overlayType) => (
                                 <label
                                   key={overlayType}
                                   className={`rounded-xl border px-4 py-4 text-sm transition cursor-pointer ${
@@ -809,6 +837,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                                     {overlayType === 'pomodoro' && 'Work & rest timer'}
                                     {overlayType === 'spotify' && 'Now playing'}
                                     {overlayType === 'local' && 'Minimal clock'}
+                                    {overlayType === 'quote' && 'Daily motivation'}
                                   </span>
                                 </label>
                               ))}
