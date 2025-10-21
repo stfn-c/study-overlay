@@ -33,11 +33,23 @@ interface StudyRoomClientProps {
   user: User | null;
 }
 
+const AVATAR_PRESETS = [
+  '😀', '😎', '🤓', '🥳', '🤠', '🧑‍💻', '👨‍🎓', '👩‍🎓', '🦊', '🐱',
+  '🐶', '🐼', '🦁', '🐸', '🦄', '🌟', '⚡', '🔥', '💎', '🎯'
+];
+
 export default function StudyRoomClient({ widget, isEditable = false, user }: StudyRoomClientProps) {
   const [room, setRoom] = useState<Room | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [customStatus, setCustomStatus] = useState('');
+  const [showStatusInput, setShowStatusInput] = useState(false);
+  const [hasSetProfile, setHasSetProfile] = useState(false);
+
   const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const fetchIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -84,12 +96,50 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
     }
   }, [roomId, user]);
 
+  // Update user profile info
+  const updateProfile = useCallback(async () => {
+    if (!roomId || !user || !displayName.trim()) return;
+
+    try {
+      const response = await fetch('/api/study-room/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId,
+          displayName: displayName.trim(),
+          avatarUrl: avatarUrl || null,
+          customStatus: showStatusInput ? customStatus.trim() : null,
+        }),
+      });
+
+      if (response.ok) {
+        setHasSetProfile(true);
+        setShowProfileSetup(false);
+        fetchRoomData();
+      }
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+    }
+  }, [roomId, user, displayName, avatarUrl, customStatus, showStatusInput, fetchRoomData]);
+
+  // Check if user needs to set up profile on first load
+  useEffect(() => {
+    if (user && !hasSetProfile) {
+      const myParticipant = participants.find(p => p.user_id === user.id);
+      if (!myParticipant || myParticipant.display_name === 'Anonymous') {
+        setShowProfileSetup(true);
+      } else {
+        setHasSetProfile(true);
+      }
+    }
+  }, [participants, user, hasSetProfile]);
+
   // Initial fetch and setup intervals
   useEffect(() => {
     fetchRoomData();
 
     // Set up ping interval (every 15 seconds to stay well under 30s timeout)
-    if (user) {
+    if (user && hasSetProfile) {
       pingIntervalRef.current = setInterval(sendPing, 15000);
     }
 
@@ -104,7 +154,97 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
         clearInterval(fetchIntervalRef.current);
       }
     };
-  }, [fetchRoomData, sendPing, user]);
+  }, [fetchRoomData, sendPing, user, hasSetProfile]);
+
+  // Profile setup modal
+  if (showProfileSetup && user) {
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6" style={{ backgroundColor: config.backgroundColor || '#1a1a1a' }}>
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl"
+        >
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Join the Room!</h2>
+          <p className="text-sm text-slate-600 mb-6">Set up your profile so others can see you studying</p>
+
+          <div className="space-y-4">
+            {/* Display Name */}
+            <div>
+              <label className="text-xs font-medium text-slate-700 mb-1 block">Display Name</label>
+              <input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your Name"
+                maxLength={30}
+                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+              />
+            </div>
+
+            {/* Avatar Picker */}
+            <div>
+              <label className="text-xs font-medium text-slate-700 mb-2 block">Choose Avatar</label>
+              <div className="grid grid-cols-10 gap-2">
+                {AVATAR_PRESETS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => setAvatarUrl(emoji)}
+                    className={`text-2xl p-2 rounded-lg transition-all ${
+                      avatarUrl === emoji
+                        ? 'bg-emerald-100 ring-2 ring-emerald-500'
+                        : 'bg-slate-100 hover:bg-slate-200'
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Status Toggle */}
+            <div>
+              <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showStatusInput}
+                  onChange={(e) => setShowStatusInput(e.target.checked)}
+                  className="rounded accent-emerald-600"
+                />
+                Add a custom status
+              </label>
+            </div>
+
+            {/* Custom Status */}
+            {showStatusInput && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+              >
+                <input
+                  type="text"
+                  value={customStatus}
+                  onChange={(e) => setCustomStatus(e.target.value)}
+                  placeholder="Studying Math 📐"
+                  maxLength={50}
+                  className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+                />
+              </motion.div>
+            )}
+
+            <button
+              onClick={updateProfile}
+              disabled={!displayName.trim()}
+              className="w-full py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Join Room
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -129,13 +269,14 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
   const style = config.style || 'compact';
   const showAvatars = config.showAvatars !== false;
   const showStatus = config.showStatus !== false;
+  const showStats = config.showStats !== false;
   const backgroundColor = config.backgroundColor || '#1a1a1a';
   const textColor = config.textColor || '#ffffff';
   const accentColor = config.accentColor || '#10b981';
 
   return (
     <div
-      className="p-6 rounded-lg h-full"
+      className="p-6 rounded-lg h-full overflow-y-auto"
       style={{ backgroundColor }}
     >
       {/* Room Header */}
@@ -146,9 +287,11 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
         >
           {room.name}
         </h2>
-        <div className="text-sm opacity-70" style={{ color: textColor }}>
-          {activeParticipants.length} active • {participants.length} total
-        </div>
+        {showStats && (
+          <div className="text-sm opacity-70" style={{ color: textColor }}>
+            {activeParticipants.length} active • {participants.length} total
+          </div>
+        )}
       </div>
 
       {/* Active Participants */}
@@ -170,16 +313,14 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
                 exit={{ opacity: 0, x: 20 }}
                 className={`flex items-center gap-3 mb-3 ${
                   style === 'spacious' ? 'p-3 rounded-lg bg-white/5' : ''
-                }`}
+                } ${style === 'cards' ? 'p-4 rounded-xl bg-white/10 backdrop-blur-sm' : ''}`}
               >
                 {showAvatars && (
                   <div className="relative">
                     {participant.avatar_url ? (
-                      <img
-                        src={participant.avatar_url}
-                        alt={participant.display_name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl bg-white/10">
+                        {participant.avatar_url}
+                      </div>
                     ) : (
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
@@ -218,7 +359,7 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
       )}
 
       {/* Away Participants */}
-      {awayParticipants.length > 0 && (
+      {awayParticipants.length > 0 && config.showAwayUsers !== false && (
         <div>
           <h3
             className="text-sm font-semibold mb-3 uppercase tracking-wider opacity-50"
@@ -236,16 +377,14 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
                 exit={{ opacity: 0, x: 20 }}
                 className={`flex items-center gap-3 mb-3 opacity-50 ${
                   style === 'spacious' ? 'p-3 rounded-lg bg-white/5' : ''
-                }`}
+                } ${style === 'cards' ? 'p-4 rounded-xl bg-white/10 backdrop-blur-sm' : ''}`}
               >
                 {showAvatars && (
                   <div className="relative">
                     {participant.avatar_url ? (
-                      <img
-                        src={participant.avatar_url}
-                        alt={participant.display_name}
-                        className="w-10 h-10 rounded-full object-cover grayscale"
-                      />
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl bg-white/10 grayscale">
+                        {participant.avatar_url}
+                      </div>
                     ) : (
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold bg-gray-600"
@@ -293,6 +432,17 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
             Share code: <span className="font-mono font-bold">{room.invite_code}</span>
           </div>
         </div>
+      )}
+
+      {/* Edit Profile Button (only for current user) */}
+      {user && hasSetProfile && (
+        <button
+          onClick={() => setShowProfileSetup(true)}
+          className="mt-6 w-full py-2 px-4 rounded-lg text-sm opacity-30 hover:opacity-100 transition-opacity"
+          style={{ backgroundColor: `${accentColor}20`, color: textColor }}
+        >
+          Edit My Profile
+        </button>
       )}
     </div>
   );

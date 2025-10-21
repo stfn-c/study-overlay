@@ -2808,7 +2808,7 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
               </motion.div>
             )}
 
-            {/* Study Room Widget Settings */}
+            {/* Study Room Widget Settings - FULL FEATURED */}
             {widget.type === 'study-room' && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -2826,12 +2826,21 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                       </p>
                     </div>
                   </div>
-                  <div className="bg-white rounded-lg p-3 border border-emerald-200">
+                  <div className="bg-white rounded-lg p-3 border border-emerald-200 mb-2">
                     <div className="text-xs text-slate-600 mb-1">Invite Code</div>
                     <div className="font-mono font-bold text-lg text-emerald-600">
                       {config.inviteCode || 'STUDY-XXXX'}
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(config.inviteCode || '');
+                    }}
+                    className="w-full py-2 px-3 bg-emerald-600 text-white text-xs rounded-lg hover:bg-emerald-700 transition-colors"
+                  >
+                    Copy Invite Code
+                  </button>
                 </div>
 
                 {/* Visual Settings */}
@@ -2841,14 +2850,14 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                   {/* Style */}
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-slate-600">Layout Style</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {['compact', 'spacious'].map((styleOption) => (
+                    <div className="grid grid-cols-3 gap-2">
+                      {['compact', 'spacious', 'cards'].map((styleOption) => (
                         <button
                           key={styleOption}
                           type="button"
                           onClick={() => setConfig({ ...config, style: styleOption })}
-                          className={`px-4 py-3 rounded-lg text-sm transition-all ${
-                            config.style === styleOption
+                          className={`px-3 py-2 rounded-lg text-xs transition-all ${
+                            (config.style || 'compact') === styleOption
                               ? 'bg-emerald-600 text-white font-medium'
                               : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
                           }`}
@@ -2889,48 +2898,90 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                       />
                     </div>
                   </div>
+                </div>
 
-                  {/* Toggle Options */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <div>
-                        <div className="text-xs font-medium text-slate-700">Show Avatars</div>
-                        <div className="text-xs text-slate-500">Display profile pictures</div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setConfig({ ...config, showAvatars: !config.showAvatars })}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          config.showAvatars !== false ? 'bg-emerald-600' : 'bg-slate-300'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            config.showAvatars !== false ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
+                {/* Display Options */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider">Display Options</h3>
 
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <div>
-                        <div className="text-xs font-medium text-slate-700">Show Status</div>
-                        <div className="text-xs text-slate-500">Display custom status messages</div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setConfig({ ...config, showStatus: !config.showStatus })}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          config.showStatus !== false ? 'bg-emerald-600' : 'bg-slate-300'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            config.showStatus !== false ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <div>
+                      <div className="text-xs font-medium text-slate-700">Show Avatars</div>
+                      <div className="text-xs text-slate-500">Display emoji profile pictures</div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfig({ ...config, showAvatars: config.showAvatars === false ? true : false })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        config.showAvatars !== false ? 'bg-emerald-600' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.showAvatars !== false ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <div>
+                      <div className="text-xs font-medium text-slate-700">Show Status Messages</div>
+                      <div className="text-xs text-slate-500">Display custom status text</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfig({ ...config, showStatus: config.showStatus === false ? true : false })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        config.showStatus !== false ? 'bg-emerald-600' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.showStatus !== false ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <div>
+                      <div className="text-xs font-medium text-slate-700">Show Statistics</div>
+                      <div className="text-xs text-slate-500">Show active/total participant counts</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfig({ ...config, showStats: config.showStats === false ? true : false })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        config.showStats !== false ? 'bg-emerald-600' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.showStats !== false ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <div>
+                      <div className="text-xs font-medium text-slate-700">Show Away Users</div>
+                      <div className="text-xs text-slate-500">Display inactive participants</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfig({ ...config, showAwayUsers: config.showAwayUsers === false ? true : false })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        config.showAwayUsers !== false ? 'bg-emerald-600' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.showAwayUsers !== false ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
                   </div>
                 </div>
               </motion.div>
