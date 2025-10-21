@@ -232,7 +232,8 @@ export function WidgetCard({ widget, onCopyLink, onDelete, copiedLinkId }: Widge
                   widget.type === 'pomodoro' && 'bg-purple-100 text-purple-700',
                   widget.type === 'spotify' && 'bg-green-100 text-green-700',
                   widget.type === 'local' && 'bg-blue-100 text-blue-700',
-                  widget.type === 'quote' && 'bg-amber-100 text-amber-700'
+                  widget.type === 'quote' && 'bg-amber-100 text-amber-700',
+                  widget.type === 'todo' && 'bg-pink-100 text-pink-700'
                 )}
               >
                 {overlayTag(widget.type)}
@@ -383,6 +384,26 @@ export function WidgetCard({ widget, onCopyLink, onDelete, copiedLinkId }: Widge
                   "Daily motivational quote changes every day"
                 </p>
                 <p className="text-xs text-amber-700 font-semibold">— Quote of the Day</p>
+              </div>
+            </div>
+          )}
+
+          {/* Todo Widget Preview */}
+          {widget.type === 'todo' && (
+            <div className="p-6 bg-gradient-to-br from-pink-50 to-purple-50 rounded-lg border border-pink-200">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs text-pink-900">
+                  <div className="w-3 h-3 rounded border-2 border-pink-600" />
+                  <span className="line-clamp-1">Track tasks and stay organized</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-pink-900">
+                  <div className="w-3 h-3 rounded border-2 border-pink-600 bg-pink-600 flex items-center justify-center">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                      <path d="M1 4L3 6L7 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <span className="line-clamp-1 line-through opacity-60">Supports priorities & due dates</span>
+                </div>
               </div>
             </div>
           )}

@@ -4,6 +4,7 @@ import PomodoroClient from '../pomodoro/pomodoro-client';
 import SpotifyClient from '../spotify/spotify-client';
 import LocalTimeClient from '../localTime/local-time-client';
 import QuoteClient from '../quote/quote-client';
+import TodoClient from '../todo/todo-client';
 
 export default async function WidgetPage({
   searchParams,
@@ -87,6 +88,15 @@ export default async function WidgetPage({
           widgetId={widgetId}
           style={widget.config.quoteStyle || 'minimal'}
           styleSettings={widget.config.quoteStyleSettings || {}}
+        />
+      );
+
+    case 'todo':
+      return (
+        <TodoClient
+          widgetId={widgetId}
+          style={widget.config.todoStyle || 'minimal'}
+          styleSettings={widget.config.todoStyleSettings || {}}
         />
       );
 

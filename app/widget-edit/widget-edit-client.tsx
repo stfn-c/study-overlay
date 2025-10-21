@@ -2087,6 +2087,437 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                 </div>
               </motion.div>
             )}
+
+            {/* TODO Widget Settings - FULL FEATURED */}
+            {widget.type === 'todo' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-6"
+              >
+                {/* Todo Lists Management */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-slate-900">Todo Lists</h3>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newListId = `list-${Date.now()}`;
+                        const newLists = [
+                          ...(config.todoLists || []),
+                          {
+                            id: newListId,
+                            name: 'New List',
+                            color: '#8B5CF6',
+                            todos: []
+                          }
+                        ];
+                        setConfig({
+                          ...config,
+                          todoLists: newLists,
+                          activeListId: newListId
+                        });
+                      }}
+                      className="px-3 py-1.5 bg-pink-600 text-white text-xs font-medium rounded-lg hover:bg-pink-700 transition-colors"
+                    >
+                      + Add List
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {(config.todoLists || []).map((list: any, listIndex: number) => (
+                      <div
+                        key={list.id}
+                        className={`p-3 rounded-xl border-2 transition-all ${
+                          config.activeListId === list.id
+                            ? 'border-pink-600 bg-pink-50'
+                            : 'border-slate-200 bg-white hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={list.name}
+                            onChange={(e) => {
+                              const newLists = [...config.todoLists];
+                              newLists[listIndex].name = e.target.value;
+                              setConfig({ ...config, todoLists: newLists });
+                            }}
+                            className="flex-1 px-2 py-1 text-sm font-medium bg-transparent border-none focus:outline-none"
+                            placeholder="List name"
+                          />
+                          <input
+                            type="color"
+                            value={list.color}
+                            onChange={(e) => {
+                              const newLists = [...config.todoLists];
+                              newLists[listIndex].color = e.target.value;
+                              setConfig({ ...config, todoLists: newLists });
+                            }}
+                            className="w-8 h-8 rounded cursor-pointer"
+                          />
+                          {config.todoLists.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newLists = config.todoLists.filter((_: any, i: number) => i !== listIndex);
+                                setConfig({
+                                  ...config,
+                                  todoLists: newLists,
+                                  activeListId: config.activeListId === list.id ? newLists[0]?.id : config.activeListId
+                                });
+                              }}
+                              className="px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded transition-colors"
+                            >
+                              Delete
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setConfig({ ...config, activeListId: list.id })}
+                            className={`px-2 py-1 text-xs rounded transition-colors ${
+                              config.activeListId === list.id
+                                ? 'bg-pink-600 text-white'
+                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            }`}
+                          >
+                            {config.activeListId === list.id ? 'Active' : 'Select'}
+                          </button>
+                        </div>
+
+                        {/* Todo Items Management */}
+                        <div className="space-y-2 mt-3 pt-3 border-t border-slate-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-slate-600 font-medium">
+                              Tasks ({list.todos.length})
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newLists = [...config.todoLists];
+                                newLists[listIndex].todos.push({
+                                  id: `todo-${Date.now()}`,
+                                  text: 'New task',
+                                  completed: false,
+                                  priority: null,
+                                  dueDate: null,
+                                  createdAt: new Date().toISOString(),
+                                  completedAt: null
+                                });
+                                setConfig({ ...config, todoLists: newLists });
+                              }}
+                              className="text-xs text-pink-600 hover:text-pink-700 font-medium"
+                            >
+                              + Add Task
+                            </button>
+                          </div>
+
+                          {list.todos.map((todo: any, todoIndex: number) => (
+                            <div
+                              key={todo.id}
+                              className="p-2 rounded-lg bg-slate-50 border border-slate-200 space-y-2"
+                            >
+                              <div className="flex items-start gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={todo.completed}
+                                  onChange={(e) => {
+                                    const newLists = [...config.todoLists];
+                                    newLists[listIndex].todos[todoIndex].completed = e.target.checked;
+                                    newLists[listIndex].todos[todoIndex].completedAt = e.target.checked
+                                      ? new Date().toISOString()
+                                      : null;
+                                    setConfig({ ...config, todoLists: newLists });
+                                  }}
+                                  className="mt-1 w-4 h-4 rounded border-slate-300"
+                                />
+                                <input
+                                  type="text"
+                                  value={todo.text}
+                                  onChange={(e) => {
+                                    const newLists = [...config.todoLists];
+                                    newLists[listIndex].todos[todoIndex].text = e.target.value;
+                                    setConfig({ ...config, todoLists: newLists });
+                                  }}
+                                  className="flex-1 px-2 py-1 text-xs bg-white rounded border border-slate-200 focus:border-pink-600 focus:outline-none"
+                                  placeholder="Task description"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newLists = [...config.todoLists];
+                                    newLists[listIndex].todos = newLists[listIndex].todos.filter(
+                                      (_: any, i: number) => i !== todoIndex
+                                    );
+                                    setConfig({ ...config, todoLists: newLists });
+                                  }}
+                                  className="px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded"
+                                >
+                                  ×
+                                </button>
+                              </div>
+
+                              {/* Priority and Due Date */}
+                              <div className="flex items-center gap-2 pl-6">
+                                <select
+                                  value={todo.priority || ''}
+                                  onChange={(e) => {
+                                    const newLists = [...config.todoLists];
+                                    newLists[listIndex].todos[todoIndex].priority = e.target.value || null;
+                                    setConfig({ ...config, todoLists: newLists });
+                                  }}
+                                  className="text-xs px-2 py-1 rounded border border-slate-200 bg-white focus:border-pink-600 focus:outline-none"
+                                >
+                                  <option value="">No priority</option>
+                                  <option value="high">High</option>
+                                  <option value="medium">Medium</option>
+                                  <option value="low">Low</option>
+                                </select>
+
+                                <input
+                                  type="date"
+                                  value={todo.dueDate || ''}
+                                  onChange={(e) => {
+                                    const newLists = [...config.todoLists];
+                                    newLists[listIndex].todos[todoIndex].dueDate = e.target.value || null;
+                                    setConfig({ ...config, todoLists: newLists });
+                                  }}
+                                  className="text-xs px-2 py-1 rounded border border-slate-200 bg-white focus:border-pink-600 focus:outline-none"
+                                />
+
+                                {todo.dueDate && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newLists = [...config.todoLists];
+                                      newLists[listIndex].todos[todoIndex].dueDate = null;
+                                      setConfig({ ...config, todoLists: newLists });
+                                    }}
+                                    className="text-xs text-slate-400 hover:text-slate-600"
+                                  >
+                                    Clear
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+
+                          {list.todos.length === 0 && (
+                            <p className="text-xs text-slate-400 text-center py-4">
+                              No tasks yet. Click "+ Add Task" to create one.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Visual Style */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-slate-900">Visual Style</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'minimal', label: 'Minimal', desc: 'Clean & simple' },
+                      { value: 'modern', label: 'Modern', desc: 'Bold & vibrant' },
+                      { value: 'compact', label: 'Compact', desc: 'Space-efficient' },
+                    ].map((styleOption) => (
+                      <motion.button
+                        key={styleOption.value}
+                        type="button"
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setConfig({ ...config, todoStyle: styleOption.value })}
+                        className={`p-3 rounded-xl border-2 text-left transition-all ${
+                          (config.todoStyle || 'minimal') === styleOption.value
+                            ? 'border-pink-600 bg-pink-600 text-white shadow-lg'
+                            : 'border-slate-200 bg-white hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="text-sm font-semibold">{styleOption.label}</div>
+                        <div className={`text-xs mt-0.5 ${
+                          (config.todoStyle || 'minimal') === styleOption.value ? 'text-white/80' : 'text-slate-500'
+                        }`}>
+                          {styleOption.desc}
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Appearance Settings */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-slate-900">Appearance</h3>
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Title Size</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="20"
+                        max="48"
+                        value={config.todoStyleSettings?.titleSize || 32}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          todoStyleSettings: { ...config.todoStyleSettings, titleSize: Number(e.target.value) }
+                        })}
+                        className="flex-1"
+                      />
+                      <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                        {config.todoStyleSettings?.titleSize || 32}px
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Task Text Size</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="14"
+                        max="32"
+                        value={config.todoStyleSettings?.fontSize || 20}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          todoStyleSettings: { ...config.todoStyleSettings, fontSize: Number(e.target.value) }
+                        })}
+                        className="flex-1"
+                      />
+                      <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                        {config.todoStyleSettings?.fontSize || 20}px
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-slate-600">Max Width</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="400"
+                        max="1000"
+                        step="50"
+                        value={config.todoStyleSettings?.maxWidth || 600}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          todoStyleSettings: { ...config.todoStyleSettings, maxWidth: Number(e.target.value) }
+                        })}
+                        className="flex-1"
+                      />
+                      <span className="text-xs font-mono text-slate-600 w-12 text-right">
+                        {config.todoStyleSettings?.maxWidth || 600}px
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Show Priority Tags</label>
+                      <p className="text-xs text-slate-500 mt-0.5">Display priority badges</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfig({
+                        ...config,
+                        todoStyleSettings: {
+                          ...config.todoStyleSettings,
+                          showPriority: config.todoStyleSettings?.showPriority === false ? true : false
+                        }
+                      })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        config.todoStyleSettings?.showPriority !== false ? 'bg-pink-600' : 'bg-slate-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.todoStyleSettings?.showPriority !== false ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Show Due Dates</label>
+                      <p className="text-xs text-slate-500 mt-0.5">Display due date labels</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfig({
+                        ...config,
+                        todoStyleSettings: {
+                          ...config.todoStyleSettings,
+                          showDueDate: config.todoStyleSettings?.showDueDate === false ? true : false
+                        }
+                      })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        config.todoStyleSettings?.showDueDate !== false ? 'bg-pink-600' : 'bg-slate-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.todoStyleSettings?.showDueDate !== false ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Bulk Actions */}
+                <div className="space-y-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider">Quick Actions</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const activeList = config.todoLists?.find((l: any) => l.id === config.activeListId);
+                        if (!activeList) return;
+                        const newLists = config.todoLists.map((list: any) =>
+                          list.id === config.activeListId
+                            ? { ...list, todos: list.todos.map((t: any) => ({ ...t, completed: false, completedAt: null })) }
+                            : list
+                        );
+                        setConfig({ ...config, todoLists: newLists });
+                      }}
+                      className="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                    >
+                      Uncheck All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const activeList = config.todoLists?.find((l: any) => l.id === config.activeListId);
+                        if (!activeList) return;
+                        const newLists = config.todoLists.map((list: any) =>
+                          list.id === config.activeListId
+                            ? { ...list, todos: list.todos.filter((t: any) => !t.completed) }
+                            : list
+                        );
+                        setConfig({ ...config, todoLists: newLists });
+                      }}
+                      className="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-red-600"
+                    >
+                      Clear Completed
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const activeList = config.todoLists?.find((l: any) => l.id === config.activeListId);
+                        if (!activeList) return;
+                        const newLists = config.todoLists.map((list: any) =>
+                          list.id === config.activeListId
+                            ? { ...list, todos: [] }
+                            : list
+                        );
+                        setConfig({ ...config, todoLists: newLists });
+                      }}
+                      className="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-red-600"
+                    >
+                      Clear All Tasks
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* Quick Tips */}
@@ -2146,6 +2577,30 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 mt-0.5">•</span>
                     <span>Try different styles for different vibes</span>
+                  </li>
+                </>
+              )}
+              {widget.type === 'todo' && (
+                <>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Create multiple lists for different categories</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Use priorities to focus on what matters most</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Set due dates to stay on track with deadlines</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Tasks auto-sort by completion, priority, then date</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span>Use Quick Actions to manage tasks in bulk</span>
                   </li>
                 </>
               )}

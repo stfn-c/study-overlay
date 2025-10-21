@@ -279,6 +279,43 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
           widget_id: savedWidget.id,
         });
       }
+
+      if (type === 'todo') {
+        const newOverlay: OverlayItem = {
+          id: `todo-${Date.now()}`,
+          name: overlayCopy.todo,
+          type: 'todo',
+          link: '',
+          createdAt: Date.now(),
+          config: {
+            todoLists: [
+              {
+                id: 'default',
+                name: 'My Tasks',
+                color: '#8B5CF6',
+                todos: []
+              }
+            ],
+            activeListId: 'default'
+          },
+        };
+
+        const savedWidget = await widgetsService.saveWidget(newOverlay, user.id);
+        const url = `${host}/widget?widgetId=${savedWidget.id}`;
+
+        newOverlay.id = savedWidget.id;
+        newOverlay.link = url;
+
+        setLink(url);
+        setOverlays((prev) => [newOverlay, ...prev]);
+        setStepIndex(finalStepIndex);
+
+        posthog.capture('widget_created', {
+          widget_type: 'todo',
+          widget_name: newOverlay.name,
+          widget_id: savedWidget.id,
+        });
+      }
     } catch (error) {
       console.error('Failed to create overlay:', error);
     } finally {
@@ -417,7 +454,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
               <div className="pt-3 border-t border-slate-200">
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">Available overlays</p>
                 <p className="text-sm text-slate-700">
-                  Pomodoro timer • Spotify now-playing • Local time • Daily quotes
+                  Pomodoro timer • Spotify now-playing • Local time • Daily quotes • Todo lists
                 </p>
               </div>
               <div className="pt-3 border-t border-slate-200">
@@ -608,7 +645,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                     {isSelectionStep && stepIsActive && (
                       <div className="mt-6 space-y-4">
                         <div className="space-y-2">
-                          {(['pomodoro', 'spotify', 'local', 'quote'] as OverlayType[]).map((option) => (
+                          {(['pomodoro', 'spotify', 'local', 'quote', 'todo'] as OverlayType[]).map((option) => (
                             <button
                               key={option}
                               type="button"
@@ -638,6 +675,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                                   {option === 'spotify' && "Show what's playing"}
                                   {option === 'local' && "Display current time"}
                                   {option === 'quote' && "Daily motivation"}
+                                  {option === 'todo' && "Task tracker"}
                                 </span>
                               </div>
                               {type === option && (
@@ -813,7 +851,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                           <fieldset className="space-y-3">
                             <legend className="text-sm font-medium text-slate-800">Choose your overlay</legend>
                             <div className="grid gap-2 sm:grid-cols-2">
-                              {(['pomodoro', 'spotify', 'local', 'quote'] as OverlayType[]).map((overlayType) => (
+                              {(['pomodoro', 'spotify', 'local', 'quote', 'todo'] as OverlayType[]).map((overlayType) => (
                                 <label
                                   key={overlayType}
                                   className={`rounded-xl border px-4 py-4 text-sm transition cursor-pointer ${
@@ -838,6 +876,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                                     {overlayType === 'spotify' && 'Now playing'}
                                     {overlayType === 'local' && 'Minimal clock'}
                                     {overlayType === 'quote' && 'Daily motivation'}
+                                    {overlayType === 'todo' && 'Track your tasks'}
                                   </span>
                                 </label>
                               ))}
