@@ -51,6 +51,37 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
     document.head.appendChild(link);
   }, []);
 
+  // Load current participant data for study room widgets
+  useEffect(() => {
+    if (widget.type === 'study-room' && config.roomId && user) {
+      const fetchParticipantData = async () => {
+        try {
+          const response = await fetch(`/api/study-room/${config.roomId}`);
+          if (!response.ok) return;
+
+          const data = await response.json();
+          const currentParticipant = data.participants?.find(
+            (p: any) => p.user_id === user.id
+          );
+
+          if (currentParticipant && !config.userDisplayName) {
+            // Initialize config with current participant data if not already set
+            setConfig({
+              ...config,
+              userDisplayName: currentParticipant.display_name,
+              userAvatar: currentParticipant.avatar_url || '😀',
+              userStatus: currentParticipant.custom_status || '',
+            });
+          }
+        } catch (err) {
+          console.error('Failed to fetch participant data:', err);
+        }
+      };
+
+      fetchParticipantData();
+    }
+  }, [widget.type, config.roomId, user]);
+
   // Build preview URL with current config for instant updates
   const getPreviewUrl = () => {
     const baseUrl = `${host}/widget?widgetId=${widget.id}`;
@@ -2841,6 +2872,112 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                   >
                     Copy Invite Code
                   </button>
+                </div>
+
+                {/* My Profile */}
+                <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200">
+                  <div className="flex items-start gap-3 mb-4">
+                    <span className="text-2xl">👤</span>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-blue-900 mb-1">My Profile</h3>
+                      <p className="text-sm text-blue-800">
+                        Customize how you appear to others in the study room
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Display Name */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-600">Display Name</label>
+                      <input
+                        type="text"
+                        value={config.userDisplayName || ''}
+                        onChange={(e) => setConfig({ ...config, userDisplayName: e.target.value })}
+                        placeholder="Your name"
+                        maxLength={30}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      />
+                    </div>
+
+                    {/* Avatar Picker */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-600">Avatar</label>
+                      <div className="grid grid-cols-10 gap-2">
+                        {['😀', '😎', '🤓', '🥳', '🤠', '🧑‍💻', '👨‍🎓', '👩‍🎓', '🦊', '🐱', '🐶', '🐼', '🦁', '🐸', '🦄', '🌟', '⚡', '🔥', '💎', '🎯'].map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => setConfig({ ...config, userAvatar: emoji })}
+                            className={`w-full aspect-square flex items-center justify-center text-2xl rounded-lg transition-all ${
+                              config.userAvatar === emoji
+                                ? 'bg-blue-600 scale-110 shadow-lg'
+                                : 'bg-white hover:bg-slate-100 border border-slate-200'
+                            }`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Custom Status */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-600">Custom Status (Optional)</label>
+                      <input
+                        type="text"
+                        value={config.userStatus || ''}
+                        onChange={(e) => setConfig({ ...config, userStatus: e.target.value })}
+                        placeholder="e.g., Studying calculus..."
+                        maxLength={50}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      />
+                    </div>
+
+                    {/* Update Profile Button */}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!config.userDisplayName?.trim()) {
+                          alert('Please enter a display name');
+                          return;
+                        }
+
+                        try {
+                          const response = await fetch('/api/study-room/status', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              roomId: config.roomId,
+                              displayName: config.userDisplayName.trim(),
+                              avatarUrl: config.userAvatar || '😀',
+                              customStatus: config.userStatus?.trim() || null,
+                            }),
+                          });
+
+                          if (!response.ok) {
+                            throw new Error('Failed to update profile');
+                          }
+
+                          // Save config to widget
+                          const supabase = createClient();
+                          await supabase
+                            .from('widgets')
+                            .update({ config })
+                            .eq('id', widget.id);
+
+                          setSaveStatus('saved');
+                          setTimeout(() => setSaveStatus('idle'), 2000);
+                        } catch (err) {
+                          console.error('Failed to update profile:', err);
+                          alert('Failed to update profile. Please try again.');
+                        }
+                      }}
+                      className="w-full py-2 px-3 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      Update My Profile
+                    </button>
+                  </div>
                 </div>
 
                 {/* Visual Settings */}
