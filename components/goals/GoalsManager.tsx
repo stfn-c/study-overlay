@@ -16,6 +16,8 @@ export default function GoalsManager({ widgetId, userId }: GoalsManagerProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   // Form state
@@ -71,6 +73,8 @@ export default function GoalsManager({ widgetId, userId }: GoalsManagerProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
 
     if (editingGoalId) {
       // Update existing goal
@@ -88,14 +92,19 @@ export default function GoalsManager({ widgetId, userId }: GoalsManagerProps) {
           }),
         });
 
-        if (response.ok) {
-          resetForm();
-          setShowAddForm(false);
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to create goal');
         }
-      } catch (error) {
+
+        resetForm();
+        setShowAddForm(false);
+      } catch (error: any) {
         console.error('Failed to create goal:', error);
+        setError(error.message || 'Failed to create goal');
       }
     }
+    setIsSubmitting(false);
   };
 
   const handleUpdateGoal = async (goalId: string, updates: Partial<typeof formData>) => {
@@ -311,9 +320,15 @@ export default function GoalsManager({ widgetId, userId }: GoalsManagerProps) {
               </div>
             )}
 
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                {error}
+              </div>
+            )}
+
             <div className="flex gap-2 pt-2">
-              <Button type="submit" size="sm" className="flex-1">
-                {editingGoalId ? 'Update Goal' : 'Create Goal'}
+              <Button type="submit" size="sm" className="flex-1" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : editingGoalId ? 'Update Goal' : 'Create Goal'}
               </Button>
               <Button
                 type="button"
@@ -323,7 +338,9 @@ export default function GoalsManager({ widgetId, userId }: GoalsManagerProps) {
                   resetForm();
                   setShowAddForm(false);
                   setEditingGoalId(null);
+                  setError(null);
                 }}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
