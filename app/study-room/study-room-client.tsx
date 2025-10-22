@@ -315,10 +315,10 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
       )}
 
       {/* Share Information - Based on Display Mode */}
-      {config.shareDisplayMode && config.shareDisplayMode !== 'none' && (
+      {(config.shareDisplayMode || 'code') !== 'none' && (
         <div className="mt-6 pt-6 border-t" style={{ borderColor: `${textColor}20` }}>
           {/* Code Only */}
-          {config.shareDisplayMode === 'code' && (
+          {(config.shareDisplayMode || 'code') === 'code' && (
             <div className="text-center">
               <div className="text-xs uppercase tracking-wider opacity-70 mb-2" style={{ color: textColor }}>
                 Join Code
@@ -330,7 +330,7 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
           )}
 
           {/* Code + URL */}
-          {config.shareDisplayMode === 'code-url' && (
+          {(config.shareDisplayMode || 'code') === 'code-url' && (
             <div className="space-y-4">
               <div className="text-center">
                 <div className="text-xs uppercase tracking-wider opacity-70 mb-2" style={{ color: textColor }}>
@@ -352,7 +352,7 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
           )}
 
           {/* URL Only */}
-          {config.shareDisplayMode === 'url' && (
+          {(config.shareDisplayMode || 'code') === 'url' && (
             <div className="text-center">
               <div className="text-xs uppercase tracking-wider opacity-70 mb-2" style={{ color: textColor }}>
                 Join Link
@@ -364,7 +364,7 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
           )}
 
           {/* QR Code */}
-          {config.shareDisplayMode === 'qr' && (
+          {(config.shareDisplayMode || 'code') === 'qr' && (
             <div className="flex flex-col items-center">
               <div className="text-xs uppercase tracking-wider opacity-70 mb-3" style={{ color: textColor }}>
                 Scan to Join
