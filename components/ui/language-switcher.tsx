@@ -46,21 +46,11 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
     }
 
     startTransition(() => {
-      // Remove current locale from pathname if it exists
-      let newPathname = pathname
+      // Set locale cookie and refresh the page
+      document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax`
 
-      // Check if pathname starts with a locale
-      const currentLocaleInPath = locales.find(loc => pathname.startsWith(`/${loc}`))
-      if (currentLocaleInPath) {
-        newPathname = pathname.replace(`/${currentLocaleInPath}`, '')
-      }
-
-      // Add new locale to pathname (unless it's the default locale 'en')
-      const finalPath = newLocale === 'en'
-        ? newPathname || '/'
-        : `/${newLocale}${newPathname || '/'}`
-
-      router.push(finalPath)
+      // Refresh the current page to apply new locale
+      router.refresh()
       setIsOpen(false)
     })
   }
