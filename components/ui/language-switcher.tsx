@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { locales, type Locale } from '@/i18n'
+import { useRouter, usePathname } from '@/i18n/navigation'
+import { routing } from '@/i18n/routing'
+import { type Locale } from '@/i18n'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,11 +47,8 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
     }
 
     startTransition(() => {
-      // Set locale cookie and refresh the page
-      document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax`
-
-      // Refresh the current page to apply new locale
-      router.refresh()
+      // Use the locale-aware router to change language
+      router.replace(pathname, { locale: newLocale })
       setIsOpen(false)
     })
   }
@@ -75,7 +73,7 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
         <div className="px-2 py-1.5 text-xs font-semibold text-slate-500">
           Select Language
         </div>
-        {locales.map((locale) => {
+        {routing.locales.map((locale) => {
           const lang = languageNames[locale]
           const isActive = locale === currentLocale
 

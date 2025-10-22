@@ -1,9 +1,18 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import createIntlMiddleware from 'next-intl/middleware'
+import { routing } from './i18n/routing'
+
+const intlMiddleware = createIntlMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
-  // Note: i18n routing disabled for now - using cookie-based locale detection instead
-  // Will enable locale-based routing when we migrate to [locale] folder structure
+  // Handle i18n routing first
+  const intlResponse = intlMiddleware(request);
+
+  // If it's a redirect, handle Supabase auth on the redirected request
+  if (intlResponse.status === 307 || intlResponse.status === 308) {
+    return intlResponse;
+  }
   let supabaseResponse = NextResponse.next({
     request,
   })
