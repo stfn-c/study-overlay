@@ -13,14 +13,17 @@ import posthog from '@/instrumentation-client';
 import QuoteSetSelector from '@/components/quotes/QuoteSetSelector';
 import ShareOptions from '@/components/study-room/ShareOptions';
 import GoalsManager from '@/components/goals/GoalsManager';
+import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { type Locale } from '@/i18n';
 
 interface WidgetEditClientProps {
   widget: any;
   user: any;
   host: string;
+  locale: Locale;
 }
 
-export default function WidgetEditClient({ widget, user, host }: WidgetEditClientProps) {
+export default function WidgetEditClient({ widget, user, host, locale }: WidgetEditClientProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -405,6 +408,7 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                   </motion.div>
                 )}
               </AnimatePresence>
+              <LanguageSwitcher currentLocale={locale} />
               <span className="text-xs text-slate-500">
                 {user.email}
               </span>

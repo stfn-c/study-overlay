@@ -83,7 +83,7 @@
     "sceneSetupInstructions": "在OBS中添加一个场景，放入你的摄像头源，并在继续之前安排好你的布局。",
     "sceneSetupFAQTitle": "设置场景时遇到问题？",
     "faqAddScene": "如何在OBS中添加场景？",
-    "faqAddSceneAnswer": "在场景面板（左下角）中，点击+按钮并命名为"学习直播"之类的名称。这将是你一起学习的主要布局。",
+    "faqAddSceneAnswer": "在场景面板（左下角）中，点击+按钮并命名为「学习直播」之类的名称。这将是你一起学习的主要布局。",
     "faqAddCamera": "如何添加我的摄像头？",
     "faqAddCameraAnswer": "在来源中点击+ → 视频捕获设备 → 从下拉菜单中选择你的摄像头。如果是黑屏，尝试选择不同的设备或重启OBS。",
     "faqCameraStretched": "我的摄像头看起来被拉伸了或大小不对",

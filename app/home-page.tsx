@@ -44,7 +44,7 @@ interface HomeProps {
 export default function HomePage({ host, token, refreshToken, user, initialWidgets, featureRequests, initialOnboardingProgress, locale }: HomeProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [supabase] = useState(() => createClient());
+  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null);
 
   const [overlays, setOverlays] = useState<OverlayItem[]>(
     initialWidgets.map(w => ({
@@ -57,6 +57,11 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
       config: w.config || {},
     }))
   );
+
+  // Initialize Supabase client only on the client side
+  useEffect(() => {
+    setSupabase(createClient());
+  }, []);
 
   // Identify user in PostHog
   useEffect(() => {
@@ -71,7 +76,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
   // Handle joinRoom parameter - auto-create study room widget and join
   useEffect(() => {
     const joinRoomId = searchParams.get('joinRoom');
-    if (!joinRoomId || !user) return;
+    if (!joinRoomId || !user || !supabase) return;
 
     const handleJoinRoom = async () => {
       try {
@@ -88,7 +93,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
 
           if (!room) {
             alert('Room not found');
-            router.replace('/dashboard');
+            router.replace('/');
             return;
           }
 
@@ -135,7 +140,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
 
           if (!room) {
             alert('Room not found');
-            router.replace('/dashboard');
+            router.replace('/');
             return;
           }
 
@@ -167,7 +172,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
       } catch (error) {
         console.error('Failed to join room:', error);
         alert('Failed to join room. Please try again.');
-        router.replace('/dashboard');
+        router.replace('/');
       }
     };
 
@@ -244,7 +249,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
 
   // Subscribe to widget state updates (for real-time Pomodoro status)
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supabase) return;
 
     const channel = supabase
       .channel('widget-updates')
@@ -669,6 +674,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
               Clean overlays for study sessions. Generate a link, add it to OBS, and study together with accountability.
             </p>
             <div className="flex items-center gap-4">
+              <LanguageSwitcher currentLocale={locale} />
               {user ? (
                 <UserMenu user={user} />
               ) : (

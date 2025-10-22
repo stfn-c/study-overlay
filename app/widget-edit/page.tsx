@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import WidgetEditClient from './widget-edit-client';
+import { getLocale } from '@/lib/i18n/get-locale';
 
 export default async function WidgetEditPage({
   searchParams,
@@ -33,6 +34,7 @@ export default async function WidgetEditPage({
   }
 
   const host = process.env.HOST || 'http://localhost:3000';
+  const locale = await getLocale();
 
-  return <WidgetEditClient widget={widget} user={user} host={host} />;
+  return <WidgetEditClient widget={widget} user={user} host={host} locale={locale} />;
 }

@@ -30,10 +30,10 @@ export default async function JoinRoomPage({ params }: { params: Promise<{ invit
             The invite code <span className="font-mono font-semibold">{inviteCode}</span> is invalid or the room no longer exists.
           </p>
           <a
-            href="/dashboard"
+            href="/"
             className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Go to Dashboard
+            Go to Home
           </a>
         </div>
       </div>
@@ -50,9 +50,9 @@ export default async function JoinRoomPage({ params }: { params: Promise<{ invit
       .eq('type', 'study-room')
       .single()
 
-    // If they don't have a study room widget, redirect to dashboard to create one
+    // If they don't have a study room widget, redirect to home to create one
     if (!widget) {
-      redirect(`/dashboard?joinRoom=${room.id}`)
+      redirect(`/?joinRoom=${room.id}`)
     }
 
     // Check if user is already in this room
