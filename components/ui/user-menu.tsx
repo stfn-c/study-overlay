@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { ChevronDown, User, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,9 +33,10 @@ export function UserMenu({ user }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          {user.email?.split('@')[0] || 'User'}
+        <Button variant="outline" size="sm" className="gap-2 hover:bg-slate-100">
+          <User className="h-4 w-4 text-slate-600" />
+          <span className="font-medium">{user.email?.split('@')[0] || 'User'}</span>
+          <ChevronDown className="h-4 w-4 text-slate-400 ml-1" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -52,6 +54,7 @@ export function UserMenu({ user }: UserMenuProps) {
           disabled={isLoading}
           className="text-red-600 cursor-pointer"
         >
+          <LogOut className="mr-2 h-4 w-4" />
           {isLoading ? 'Signing out...' : 'Sign out'}
         </DropdownMenuItem>
       </DropdownMenuContent>
