@@ -126,8 +126,8 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
               custom_status: null,
             });
 
-          // Redirect to the widget
-          router.replace(`/study-room?id=${newWidget.id}`);
+          // Redirect to widget edit page so they can customize their widget
+          router.replace(`/widget-edit?widgetId=${newWidget.id}`);
         } else {
           // Update existing widget with new room
           const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Student';
@@ -166,8 +166,8 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
               custom_status: null,
             });
 
-          // Redirect to the widget
-          router.replace(`/study-room?id=${existingStudyRoom.id}`);
+          // Redirect to widget edit page so they can customize their widget
+          router.replace(`/widget-edit?widgetId=${existingStudyRoom.id}`);
         }
       } catch (error) {
         console.error('Failed to join room:', error);

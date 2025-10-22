@@ -92,8 +92,8 @@ export default async function JoinRoomPage({ params }: { params: Promise<{ invit
         .eq('id', widget.id)
     }
 
-    // Redirect to their study room widget
-    redirect(`/study-room?id=${widget.id}`)
+    // Redirect to widget edit page so they can customize their widget
+    redirect(`/widget-edit?widgetId=${widget.id}`)
   }
 
   // If not authenticated, show join page with sign in options
