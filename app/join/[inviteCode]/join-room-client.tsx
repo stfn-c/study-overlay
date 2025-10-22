@@ -28,7 +28,7 @@ export default function JoinRoomClient({ room, inviteCode }: JoinRoomClientProps
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/study-room/${room.id}`,
+          redirectTo: `${window.location.origin}/join/${inviteCode}`,
         },
       })
 

@@ -40,9 +40,60 @@ export default async function JoinRoomPage({ params }: { params: Promise<{ invit
     )
   }
 
-  // If user is authenticated, redirect to study room
+  // If user is authenticated, find or create their study room widget and join
   if (user) {
-    redirect(`/study-room/${room.id}`)
+    // Find user's study room widget
+    const { data: widget } = await supabase
+      .from('widgets')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('type', 'study-room')
+      .single()
+
+    // If they don't have a study room widget, redirect to dashboard to create one
+    if (!widget) {
+      redirect(`/dashboard?joinRoom=${room.id}`)
+    }
+
+    // Check if user is already in this room
+    const { data: existingParticipant } = await supabase
+      .from('room_participants')
+      .select('*')
+      .eq('room_id', room.id)
+      .eq('user_id', user.id)
+      .single()
+
+    // If not in room, add them
+    if (!existingParticipant) {
+      const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Student'
+
+      await supabase
+        .from('room_participants')
+        .insert({
+          room_id: room.id,
+          user_id: user.id,
+          display_name: displayName,
+          avatar_url: '😀',
+          custom_status: null,
+        })
+
+      // Update widget config with room info
+      await supabase
+        .from('widgets')
+        .update({
+          config: {
+            ...widget.config,
+            roomId: room.id,
+            inviteCode: room.invite_code,
+            userDisplayName: displayName,
+            userAvatar: '😀',
+          }
+        })
+        .eq('id', widget.id)
+    }
+
+    // Redirect to their study room widget
+    redirect(`/study-room?id=${widget.id}`)
   }
 
   // If not authenticated, show join page with sign in options
