@@ -97,6 +97,8 @@ export default function GoalsManager({ widgetId, userId }: GoalsManagerProps) {
           throw new Error(data.error || 'Failed to create goal');
         }
 
+        // Fetch goals immediately after creation
+        await fetchGoals();
         resetForm();
         setShowAddForm(false);
       } catch (error: any) {
@@ -119,6 +121,7 @@ export default function GoalsManager({ widgetId, userId }: GoalsManagerProps) {
       });
 
       if (response.ok) {
+        await fetchGoals();
         resetForm();
         setEditingGoalId(null);
       }
@@ -129,7 +132,7 @@ export default function GoalsManager({ widgetId, userId }: GoalsManagerProps) {
 
   const handleUpdateProgress = async (goalId: string, newValue: number) => {
     try {
-      await fetch('/api/goals', {
+      const response = await fetch('/api/goals', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -137,6 +140,10 @@ export default function GoalsManager({ widgetId, userId }: GoalsManagerProps) {
           updates: { currentValue: newValue },
         }),
       });
+
+      if (response.ok) {
+        await fetchGoals();
+      }
     } catch (error) {
       console.error('Failed to update progress:', error);
     }
@@ -146,9 +153,13 @@ export default function GoalsManager({ widgetId, userId }: GoalsManagerProps) {
     if (!confirm('Delete this goal?')) return;
 
     try {
-      await fetch(`/api/goals?goalId=${goalId}`, {
+      const response = await fetch(`/api/goals?goalId=${goalId}`, {
         method: 'DELETE',
       });
+
+      if (response.ok) {
+        await fetchGoals();
+      }
     } catch (error) {
       console.error('Failed to delete goal:', error);
     }
