@@ -576,12 +576,6 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                 </p>
               </div>
               <div className="pt-3 border-t border-slate-200">
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">Available overlays</p>
-                <p className="text-sm text-slate-700">
-                  Pomodoro timer • Spotify now-playing • Local time • Daily quotes • Todo lists
-                </p>
-              </div>
-              <div className="pt-3 border-t border-slate-200">
                 <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                   <p className="text-xs font-medium uppercase tracking-wider text-amber-700 mb-2">Known Issues</p>
                   <p className="text-xs text-amber-800 leading-relaxed mb-2">
