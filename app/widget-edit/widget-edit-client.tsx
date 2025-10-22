@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client';
 import { OverlayItem } from '@/lib/types/widget';
 import posthog from '@/instrumentation-client';
 import QuoteSetSelector from '@/components/quotes/QuoteSetSelector';
+import ShareOptions from '@/components/study-room/ShareOptions';
 import GoalsManager from '@/components/goals/GoalsManager';
 
 interface WidgetEditClientProps {
@@ -2975,33 +2976,13 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                 animate={{ opacity: 1 }}
                 className="space-y-6"
               >
-                {/* Room Info */}
-                <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200">
-                  <div className="flex items-start gap-3 mb-3">
-                    <span className="text-2xl">👥</span>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-emerald-900 mb-1">Room Information</h3>
-                      <p className="text-sm text-emerald-800">
-                        Share this invite code with friends to study together!
-                      </p>
-                    </div>
-                  </div>
-                  <div className="bg-white rounded-lg p-3 border border-emerald-200 mb-2">
-                    <div className="text-xs text-slate-600 mb-1">Invite Code</div>
-                    <div className="font-mono font-bold text-lg text-emerald-600">
-                      {config.inviteCode || 'STUDY-XXXX'}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(config.inviteCode || '');
-                    }}
-                    className="w-full py-2 px-3 bg-emerald-600 text-white text-xs rounded-lg hover:bg-emerald-700 transition-colors"
-                  >
-                    Copy Invite Code
-                  </button>
-                </div>
+                {/* Share Options for Streaming */}
+                <ShareOptions
+                  inviteCode={config.inviteCode || ''}
+                  roomId={config.roomId || ''}
+                  displayMode={config.shareDisplayMode || 'code'}
+                  onDisplayModeChange={(mode) => setConfig({ ...config, shareDisplayMode: mode })}
+                />
 
                 {/* My Profile */}
                 <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200">

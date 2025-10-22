@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Widget } from '@/lib/db/schema';
 import { User } from '@supabase/supabase-js';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Participant {
   id: string;
@@ -310,6 +311,77 @@ export default function StudyRoomClient({ widget, isEditable = false, user }: St
           <div className="text-xs mt-1" style={{ color: textColor }}>
             Share code: <span className="font-mono font-bold">{room.invite_code}</span>
           </div>
+        </div>
+      )}
+
+      {/* Share Information - Based on Display Mode */}
+      {config.shareDisplayMode && config.shareDisplayMode !== 'none' && (
+        <div className="mt-6 pt-6 border-t" style={{ borderColor: `${textColor}20` }}>
+          {/* Code Only */}
+          {config.shareDisplayMode === 'code' && (
+            <div className="text-center">
+              <div className="text-xs uppercase tracking-wider opacity-70 mb-2" style={{ color: textColor }}>
+                Join Code
+              </div>
+              <div className="font-mono font-bold text-3xl tracking-wider" style={{ color: accentColor }}>
+                {room.invite_code}
+              </div>
+            </div>
+          )}
+
+          {/* Code + URL */}
+          {config.shareDisplayMode === 'code-url' && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="text-xs uppercase tracking-wider opacity-70 mb-2" style={{ color: textColor }}>
+                  Join Code
+                </div>
+                <div className="font-mono font-bold text-2xl tracking-wider" style={{ color: accentColor }}>
+                  {room.invite_code}
+                </div>
+              </div>
+              <div className="border-t pt-4" style={{ borderColor: `${textColor}20` }}>
+                <div className="text-xs uppercase tracking-wider opacity-70 mb-2 text-center" style={{ color: textColor }}>
+                  Join Link
+                </div>
+                <div className="font-mono text-sm text-center break-all" style={{ color: accentColor }}>
+                  {typeof window !== 'undefined' ? `${window.location.origin}/join/${room.invite_code}` : `yoursite.com/join/${room.invite_code}`}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* URL Only */}
+          {config.shareDisplayMode === 'url' && (
+            <div className="text-center">
+              <div className="text-xs uppercase tracking-wider opacity-70 mb-2" style={{ color: textColor }}>
+                Join Link
+              </div>
+              <div className="font-mono text-lg break-all" style={{ color: accentColor }}>
+                {typeof window !== 'undefined' ? `${window.location.origin}/join/${room.invite_code}` : `yoursite.com/join/${room.invite_code}`}
+              </div>
+            </div>
+          )}
+
+          {/* QR Code */}
+          {config.shareDisplayMode === 'qr' && (
+            <div className="flex flex-col items-center">
+              <div className="text-xs uppercase tracking-wider opacity-70 mb-3" style={{ color: textColor }}>
+                Scan to Join
+              </div>
+              <div className="bg-white p-3 rounded-lg">
+                <QRCodeSVG
+                  value={typeof window !== 'undefined' ? `${window.location.origin}/join/${room.invite_code}` : `https://yoursite.com/join/${room.invite_code}`}
+                  size={160}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+              <div className="font-mono text-sm mt-3" style={{ color: accentColor }}>
+                {room.invite_code}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
