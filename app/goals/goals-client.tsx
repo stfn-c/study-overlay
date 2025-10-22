@@ -57,6 +57,24 @@ export default function GoalsClient({ widgetId, initialGoals = [], styleSettings
 
   // Real-time updates via Supabase
   useEffect(() => {
+    const mapGoal = (rawGoal: any): StudyGoal => ({
+      id: rawGoal.id,
+      widgetId: rawGoal.widget_id,
+      userId: rawGoal.user_id,
+      title: rawGoal.title,
+      description: rawGoal.description,
+      targetValue: rawGoal.target_value,
+      currentValue: rawGoal.current_value,
+      unit: rawGoal.unit,
+      goalType: rawGoal.goal_type,
+      startDate: rawGoal.start_date,
+      endDate: rawGoal.end_date,
+      isCompleted: rawGoal.is_completed,
+      completedAt: rawGoal.completed_at,
+      createdAt: rawGoal.created_at,
+      updatedAt: rawGoal.updated_at,
+    });
+
     const channel = supabase
       .channel(`goals-${widgetId}`)
       .on(
@@ -69,18 +87,18 @@ export default function GoalsClient({ widgetId, initialGoals = [], styleSettings
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setGoals((prev) => [payload.new as StudyGoal, ...prev]);
+            setGoals((prev) => [mapGoal(payload.new), ...prev]);
           } else if (payload.eventType === 'UPDATE') {
+            const mappedGoal = mapGoal(payload.new);
             setGoals((prev) =>
               prev.map((goal) =>
-                goal.id === payload.new.id ? (payload.new as StudyGoal) : goal
+                goal.id === mappedGoal.id ? mappedGoal : goal
               )
             );
 
             // Trigger celebration if goal just completed
-            const updatedGoal = payload.new as StudyGoal;
-            if (updatedGoal.isCompleted === 1) {
-              setCelebratingGoalId(updatedGoal.id);
+            if (mappedGoal.isCompleted === 1) {
+              setCelebratingGoalId(mappedGoal.id);
               setTimeout(() => setCelebratingGoalId(null), 3000);
             }
           } else if (payload.eventType === 'DELETE') {

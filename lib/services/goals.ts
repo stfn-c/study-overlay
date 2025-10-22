@@ -16,7 +16,24 @@ export const goalsService = {
       throw error;
     }
 
-    return data || [];
+    // Map snake_case to camelCase
+    return (data || []).map((goal: any) => ({
+      id: goal.id,
+      widgetId: goal.widget_id,
+      userId: goal.user_id,
+      title: goal.title,
+      description: goal.description,
+      targetValue: goal.target_value,
+      currentValue: goal.current_value,
+      unit: goal.unit,
+      goalType: goal.goal_type,
+      startDate: goal.start_date,
+      endDate: goal.end_date,
+      isCompleted: goal.is_completed,
+      completedAt: goal.completed_at,
+      createdAt: goal.created_at,
+      updatedAt: goal.updated_at,
+    }));
   },
 
   async createGoal(goal: Omit<NewStudyGoal, 'id' | 'createdAt' | 'updatedAt'>) {
