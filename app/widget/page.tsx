@@ -1,12 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import PomodoroClient from '../pomodoro/pomodoro-client';
-import SpotifyClient from '../spotify/spotify-client';
-import LocalTimeClient from '../localTime/local-time-client';
-import QuoteClient from '../quote/quote-client';
-import TodoClient from '../todo/todo-client';
-import StudyRoomClient from '../study-room/study-room-client';
-import GoalsClient from '../goals/goals-client';
+import PomodoroClient from '../[locale]/pomodoro/pomodoro-client';
+import SpotifyClient from '../[locale]/spotify/spotify-client';
+import LocalTimeClient from '../[locale]/localTime/local-time-client';
+import QuoteClient from '../[locale]/quote/quote-client';
+import TodoClient from '../[locale]/todo/todo-client';
+import StudyRoomClient from '../[locale]/study-room/study-room-client';
+import GoalsClient from '../[locale]/goals/goals-client';
 
 export default async function WidgetPage({
   searchParams,
