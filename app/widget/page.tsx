@@ -6,6 +6,7 @@ import LocalTimeClient from '../localTime/local-time-client';
 import QuoteClient from '../quote/quote-client';
 import TodoClient from '../todo/todo-client';
 import StudyRoomClient from '../study-room/study-room-client';
+import GoalsClient from '../goals/goals-client';
 
 export default async function WidgetPage({
   searchParams,
@@ -107,6 +108,14 @@ export default async function WidgetPage({
         <StudyRoomClient
           widget={widget}
           user={user}
+        />
+      );
+
+    case 'goals':
+      return (
+        <GoalsClient
+          widgetId={widgetId}
+          styleSettings={widget.config.styleSettings || {}}
         />
       );
 
