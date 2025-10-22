@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { usersService } from '@/lib/services/users';
 import { featureRequestsService } from '@/lib/services/feature-requests';
 import { getLocale } from '@/lib/i18n/get-locale';
+import { NextIntlClientProvider } from 'next-intl';
 
 // Disable caching for this page to ensure fresh widget data
 export const dynamic = 'force-dynamic';
@@ -94,17 +95,20 @@ export default async function Page({
 
   // Get user's locale
   const locale = await getLocale();
+  const messages = (await import(`@/messages/${locale}.json`)).default;
 
   return (
-    <HomePage
-      host={host}
-      token={spotifyToken || access_token}
-      refreshToken={spotifyRefreshToken || refresh_token}
-      user={user}
-      initialWidgets={initialWidgets}
-      featureRequests={featureRequests}
-      initialOnboardingProgress={onboardingProgress}
-      locale={locale}
-    />
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <HomePage
+        host={host}
+        token={spotifyToken || access_token}
+        refreshToken={spotifyRefreshToken || refresh_token}
+        user={user}
+        initialWidgets={initialWidgets}
+        featureRequests={featureRequests}
+        initialOnboardingProgress={onboardingProgress}
+        locale={locale}
+      />
+    </NextIntlClientProvider>
   );
 }

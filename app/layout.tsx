@@ -5,8 +5,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { PostHogPageview } from "@/components/providers/posthog-provider";
 import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
 import { Suspense } from "react";
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale } from '@/lib/i18n/get-locale';
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -18,29 +16,24 @@ export const metadata: Metadata = {
   description: "Generate beautiful, customizable overlays for online study sessions. Pomodoro timers, Spotify trackers, and more for studying together.",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
-  const messages = (await import(`@/messages/${locale}.json`)).default;
-
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={`${plusJakarta.className} antialiased`}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <div className="flex min-h-screen flex-col">
-            <Suspense fallback={null}>
-              <PostHogPageview />
-            </Suspense>
-            <main className="flex-1">
-              {children}
-            </main>
-            <ConditionalFooter />
-            <Analytics />
-          </div>
-        </NextIntlClientProvider>
+        <div className="flex min-h-screen flex-col">
+          <Suspense fallback={null}>
+            <PostHogPageview />
+          </Suspense>
+          <main className="flex-1">
+            {children}
+          </main>
+          <ConditionalFooter />
+          <Analytics />
+        </div>
       </body>
     </html>
   );
