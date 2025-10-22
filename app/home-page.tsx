@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,27 +40,9 @@ interface HomeProps {
 
 export default function HomePage({ host, token, refreshToken, user, initialWidgets, featureRequests, initialOnboardingProgress }: HomeProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [supabase] = useState(() => createClient());
 
-  // Identify user in PostHog
-  useEffect(() => {
-    if (user) {
-      posthog.identify(user.id, {
-        email: user.email,
-        name: user.full_name,
-      });
-    }
-  }, [user]);
-
-  const { register, handleSubmit, watch, formState: { errors }, reset, setValue } = useForm<FormData>({
-    defaultValues: {
-      type: token ? 'spotify' : null,
-    },
-  });
-
-  const type = watch('type');
-
-  const [link, setLink] = useState('');
   const [overlays, setOverlays] = useState<OverlayItem[]>(
     initialWidgets.map(w => ({
       id: w.id,
@@ -72,6 +54,132 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
       config: w.config || {},
     }))
   );
+
+  // Identify user in PostHog
+  useEffect(() => {
+    if (user) {
+      posthog.identify(user.id, {
+        email: user.email,
+        name: user.full_name,
+      });
+    }
+  }, [user]);
+
+  // Handle joinRoom parameter - auto-create study room widget and join
+  useEffect(() => {
+    const joinRoomId = searchParams.get('joinRoom');
+    if (!joinRoomId || !user) return;
+
+    const handleJoinRoom = async () => {
+      try {
+        // Check if user already has a study room widget
+        const existingStudyRoom = overlays.find(w => w.type === 'study-room');
+
+        if (!existingStudyRoom) {
+          // Create a study room widget first
+          const { data: room } = await supabase
+            .from('study_rooms')
+            .select('*')
+            .eq('id', joinRoomId)
+            .single();
+
+          if (!room) {
+            alert('Room not found');
+            router.replace('/dashboard');
+            return;
+          }
+
+          const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Student';
+
+          // Create the widget
+          const newWidget = await widgetsService.saveWidget({
+            id: `study-room-${Date.now()}`,
+            name: 'Study Room',
+            type: 'study-room',
+            link: '',
+            createdAt: Date.now(),
+            config: {
+              roomId: joinRoomId,
+              inviteCode: room.invite_code,
+              userDisplayName: displayName,
+              userAvatar: '😀',
+              shareDisplayMode: 'code',
+            },
+          }, user.id);
+
+          // Join the room as a participant
+          await supabase
+            .from('room_participants')
+            .insert({
+              room_id: joinRoomId,
+              user_id: user.id,
+              display_name: displayName,
+              avatar_url: '😀',
+              custom_status: null,
+            });
+
+          // Redirect to the widget
+          router.replace(`/study-room?id=${newWidget.id}`);
+        } else {
+          // Update existing widget with new room
+          const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Student';
+
+          const { data: room } = await supabase
+            .from('study_rooms')
+            .select('*')
+            .eq('id', joinRoomId)
+            .single();
+
+          if (!room) {
+            alert('Room not found');
+            router.replace('/dashboard');
+            return;
+          }
+
+          await supabase
+            .from('widgets')
+            .update({
+              config: {
+                ...existingStudyRoom.config,
+                roomId: joinRoomId,
+                inviteCode: room.invite_code,
+              }
+            })
+            .eq('id', existingStudyRoom.id);
+
+          // Join the room as a participant
+          await supabase
+            .from('room_participants')
+            .insert({
+              room_id: joinRoomId,
+              user_id: user.id,
+              display_name: displayName,
+              avatar_url: '😀',
+              custom_status: null,
+            });
+
+          // Redirect to the widget
+          router.replace(`/study-room?id=${existingStudyRoom.id}`);
+        }
+      } catch (error) {
+        console.error('Failed to join room:', error);
+        alert('Failed to join room. Please try again.');
+        router.replace('/dashboard');
+      }
+    };
+
+    handleJoinRoom();
+  }, [searchParams, user, overlays, router, supabase]);
+
+  const { register, handleSubmit, watch, formState: { errors }, reset, setValue } = useForm<FormData>({
+    defaultValues: {
+      type: token ? 'spotify' : null,
+    },
+  });
+
+  const type = watch('type');
+
+  const [link, setLink] = useState('');
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);

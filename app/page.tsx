@@ -5,6 +5,10 @@ import { createClient } from '@/lib/supabase/server';
 import { usersService } from '@/lib/services/users';
 import { featureRequestsService } from '@/lib/services/feature-requests';
 
+// Disable caching for this page to ensure fresh widget data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Page({
   searchParams,
 }: {
