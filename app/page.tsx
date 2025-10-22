@@ -4,6 +4,7 @@ import { fetchSpotifyAccessToken } from '@/lib/utils/spotify';
 import { createClient } from '@/lib/supabase/server';
 import { usersService } from '@/lib/services/users';
 import { featureRequestsService } from '@/lib/services/feature-requests';
+import { getLocale } from '@/lib/i18n/get-locale';
 
 // Disable caching for this page to ensure fresh widget data
 export const dynamic = 'force-dynamic';
@@ -91,6 +92,9 @@ export default async function Page({
   // Fetch feature requests for everyone
   const featureRequests = await featureRequestsService.getAllFeatureRequests(user?.id);
 
+  // Get user's locale
+  const locale = await getLocale();
+
   return (
     <HomePage
       host={host}
@@ -100,6 +104,7 @@ export default async function Page({
       initialWidgets={initialWidgets}
       featureRequests={featureRequests}
       initialOnboardingProgress={onboardingProgress}
+      locale={locale}
     />
   );
 }

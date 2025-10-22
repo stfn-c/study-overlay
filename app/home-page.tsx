@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/sheet";
 import { FeatureRequestList } from '@/components/feature-requests/FeatureRequestList';
 import { FeatureRequestWithDetails } from '@/lib/services/feature-requests';
+import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { type Locale } from '@/i18n';
 
 interface HomeProps {
   host: string;
@@ -36,9 +38,10 @@ interface HomeProps {
     obsInstalled: 'yes' | 'no' | null;
     sceneReady: 'yes' | 'no' | null;
   };
+  locale: Locale;
 }
 
-export default function HomePage({ host, token, refreshToken, user, initialWidgets, featureRequests, initialOnboardingProgress }: HomeProps) {
+export default function HomePage({ host, token, refreshToken, user, initialWidgets, featureRequests, initialOnboardingProgress, locale }: HomeProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [supabase] = useState(() => createClient());
@@ -189,6 +192,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
   const [sceneReady, setSceneReady] = useState<'yes' | 'no' | null>(initialOnboardingProgress?.sceneReady || null);
   const [isSaving, setIsSaving] = useState(false);
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+  const [lastCreatedWidgetId, setLastCreatedWidgetId] = useState<string | null>(null);
 
   const finalStepIndex = 4;
 
@@ -217,6 +221,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
             newOverlay.link = `${host}/widget?widgetId=${savedWidget.id}`;
 
             setOverlays((previous) => [newOverlay, ...previous]);
+            setLastCreatedWidgetId(savedWidget.id);
 
             posthog.capture('widget_created', {
               widget_type: 'spotify',
@@ -329,6 +334,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
         setLink(url);
         setOverlays((prev) => [newOverlay, ...prev]);
         setStepIndex(finalStepIndex);
+        setLastCreatedWidgetId(savedWidget.id);
 
         posthog.capture('widget_created', {
           widget_type: 'pomodoro',
@@ -357,6 +363,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
         setLink(url);
         setOverlays((prev) => [newOverlay, ...prev]);
         setStepIndex(finalStepIndex);
+        setLastCreatedWidgetId(savedWidget.id);
 
         posthog.capture('widget_created', {
           widget_type: 'local',
@@ -384,6 +391,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
         setLink(url);
         setOverlays((prev) => [newOverlay, ...prev]);
         setStepIndex(finalStepIndex);
+        setLastCreatedWidgetId(savedWidget.id);
 
         posthog.capture('widget_created', {
           widget_type: 'quote',
@@ -424,6 +432,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
         setLink(url);
         setOverlays((prev) => [newOverlay, ...prev]);
         setStepIndex(finalStepIndex);
+        setLastCreatedWidgetId(savedWidget.id);
 
         posthog.capture('widget_created', {
           widget_type: 'goals',
@@ -461,6 +470,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
         setLink(url);
         setOverlays((prev) => [newOverlay, ...prev]);
         setStepIndex(finalStepIndex);
+        setLastCreatedWidgetId(savedWidget.id);
 
         posthog.capture('widget_created', {
           widget_type: 'todo',
@@ -538,6 +548,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
         setLink(url);
         setOverlays((prev) => [newOverlay, ...prev]);
         setStepIndex(finalStepIndex);
+        setLastCreatedWidgetId(savedWidget.id);
 
         posthog.capture('widget_created', {
           widget_type: 'study-room',
@@ -592,6 +603,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
     setStepIndex(0);
     setCopiedLinkId(null);
     setExpandedFAQ(null);
+    setLastCreatedWidgetId(null);
   };
 
   const closeSheet = () => {
@@ -1456,9 +1468,15 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
                           <button
                             type="button"
                             className="flex-1 rounded-xl bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-800 shadow-lg transition-all"
-                            onClick={closeSheet}
+                            onClick={() => {
+                              if (lastCreatedWidgetId) {
+                                router.push(`/widget-edit?widgetId=${lastCreatedWidgetId}`);
+                              } else {
+                                closeSheet();
+                              }
+                            }}
                           >
-                            All done! ✓
+                            Customize widget →
                           </button>
                         </div>
                       </div>
