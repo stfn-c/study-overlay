@@ -40,7 +40,7 @@ interface HomeProps {
 
 export default function HomePage({ host, token, refreshToken, user, initialWidgets, featureRequests, initialOnboardingProgress }: HomeProps) {
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   // Identify user in PostHog
   useEffect(() => {
