@@ -87,77 +87,93 @@ const defaultQuoteSets: QuoteSetData[] = [
   },
 ]
 
+async function seedQuotes() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // For security, you might want to check if user is an admin
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  let totalSets = 0
+  let totalQuotes = 0
+
+  for (const setData of defaultQuoteSets) {
+    // Check if set already exists
+    const { data: existing } = await supabase
+      .from('quote_sets')
+      .select('id')
+      .eq('name', setData.name)
+      .eq('is_default', 1)
+      .single()
+
+    if (existing) {
+      console.log(`Quote set "${setData.name}" already exists, skipping...`)
+      continue
+    }
+
+    // Create the quote set (without user_id, making it a default set)
+    const { data: quoteSet, error: setError } = await supabase
+      .from('quote_sets')
+      .insert({
+        name: setData.name,
+        description: setData.description,
+        user_id: null,
+        is_default: 1,
+      })
+      .select()
+      .single()
+
+    if (setError) {
+      console.error(`Error creating quote set ${setData.name}:`, setError)
+      continue
+    }
+
+    totalSets++
+
+    // Add all quotes to the set
+    const quotesToInsert = setData.quotes.map((quote) => ({
+      quote_set_id: quoteSet.id,
+      text: quote.text,
+      author: quote.author,
+    }))
+
+    const { error: quotesError } = await supabase
+      .from('quotes')
+      .insert(quotesToInsert)
+
+    if (quotesError) {
+      console.error(`Error adding quotes to ${setData.name}:`, quotesError)
+      continue
+    }
+
+    totalQuotes += quotesToInsert.length
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: `Seeded ${totalSets} quote sets with ${totalQuotes} total quotes`,
+    sets: totalSets,
+    quotes: totalQuotes,
+  })
+}
+
+export async function GET() {
+  try {
+    return await seedQuotes()
+  } catch (error) {
+    console.error('Failed to seed quotes:', error)
+    return NextResponse.json(
+      { error: 'Failed to seed quotes' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function POST() {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    // For security, you might want to check if user is an admin
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    let totalSets = 0
-    let totalQuotes = 0
-
-    for (const setData of defaultQuoteSets) {
-      // Check if set already exists
-      const { data: existing } = await supabase
-        .from('quote_sets')
-        .select('id')
-        .eq('name', setData.name)
-        .eq('is_default', 1)
-        .single()
-
-      if (existing) {
-        console.log(`Quote set "${setData.name}" already exists, skipping...`)
-        continue
-      }
-
-      // Create the quote set (without user_id, making it a default set)
-      const { data: quoteSet, error: setError } = await supabase
-        .from('quote_sets')
-        .insert({
-          name: setData.name,
-          description: setData.description,
-          user_id: null,
-          is_default: 1,
-        })
-        .select()
-        .single()
-
-      if (setError) {
-        console.error(`Error creating quote set ${setData.name}:`, setError)
-        continue
-      }
-
-      totalSets++
-
-      // Add all quotes to the set
-      const quotesToInsert = setData.quotes.map((quote) => ({
-        quote_set_id: quoteSet.id,
-        text: quote.text,
-        author: quote.author,
-      }))
-
-      const { error: quotesError } = await supabase
-        .from('quotes')
-        .insert(quotesToInsert)
-
-      if (quotesError) {
-        console.error(`Error adding quotes to ${setData.name}:`, quotesError)
-        continue
-      }
-
-      totalQuotes += quotesToInsert.length
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: `Seeded ${totalSets} quote sets with ${totalQuotes} total quotes`,
-      sets: totalSets,
-      quotes: totalQuotes,
-    })
+    return await seedQuotes()
   } catch (error) {
     console.error('Failed to seed quotes:', error)
     return NextResponse.json(

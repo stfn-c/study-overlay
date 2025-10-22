@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client';
 import { OverlayItem } from '@/lib/types/widget';
 import posthog from '@/instrumentation-client';
 import QuoteSetSelector from '@/components/quotes/QuoteSetSelector';
+import GoalsManager from '@/components/goals/GoalsManager';
 
 interface WidgetEditClientProps {
   widget: any;
@@ -2844,6 +2845,125 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                       Clear All Tasks
                     </button>
                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Goals Widget Settings - FULL FEATURED */}
+            {widget.type === 'goals' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-6"
+              >
+                {/* Goals Management */}
+                <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200">
+                  <div className="flex items-start gap-3 mb-4">
+                    <span className="text-2xl">🎯</span>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-indigo-900 mb-1">Study Goals</h3>
+                      <p className="text-sm text-indigo-800">
+                        Create and track your study objectives with progress bars and deadlines
+                      </p>
+                    </div>
+                  </div>
+
+                  <GoalsManager widgetId={widget.id} userId={user.id} />
+                </div>
+
+                {/* Display Style */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-slate-900">Display Style</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['minimal', 'modern', 'cards'].map((style) => (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => setConfig({
+                          ...config,
+                          styleSettings: { ...config.styleSettings, displayStyle: style }
+                        })}
+                        className={`p-3 rounded-lg border-2 text-center capitalize transition-all ${
+                          (config.styleSettings?.displayStyle || 'modern') === style
+                            ? 'border-indigo-600 bg-indigo-50'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        {style}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Color Customization */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-slate-900">Colors</h4>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-slate-600">Primary Color</label>
+                    <div className="flex gap-2">
+                      {['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'].map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => setConfig({
+                            ...config,
+                            styleSettings: { ...config.styleSettings, primaryColor: color }
+                          })}
+                          className={`w-8 h-8 rounded-lg border-2 transition-all ${
+                            (config.styleSettings?.primaryColor || '#8B5CF6') === color
+                              ? 'border-slate-900 scale-110'
+                              : 'border-slate-200 hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-slate-600">Secondary Color</label>
+                    <div className="flex gap-2">
+                      {['#10b981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899'].map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => setConfig({
+                            ...config,
+                            styleSettings: { ...config.styleSettings, secondaryColor: color }
+                          })}
+                          className={`w-8 h-8 rounded-lg border-2 transition-all ${
+                            (config.styleSettings?.secondaryColor || '#10b981') === color
+                              ? 'border-slate-900 scale-110'
+                              : 'border-slate-200 hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Display Options */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-slate-900">Display Options</h4>
+
+                  {['showStats', 'showDescription', 'showDeadline', 'animateProgress'].map((option) => (
+                    <label key={option} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                      <span className="text-sm text-slate-700 capitalize">
+                        {option.replace(/([A-Z])/g, ' $1').trim()}
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={config.styleSettings?.[option] !== false}
+                        onChange={(e) => setConfig({
+                          ...config,
+                          styleSettings: { ...config.styleSettings, [option]: e.target.checked }
+                        })}
+                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                      />
+                    </label>
+                  ))}
                 </div>
               </motion.div>
             )}

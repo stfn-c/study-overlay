@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Widget ID is required' }, { status: 400 });
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: goals, error } = await supabase
     .from('study_goals')
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
 // POST: Create a new goal
 export async function POST(request: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 
 // PUT: Update a goal (progress or details)
 export async function PUT(request: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -142,7 +142,7 @@ export async function PUT(request: NextRequest) {
 
 // DELETE: Delete a goal
 export async function DELETE(request: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

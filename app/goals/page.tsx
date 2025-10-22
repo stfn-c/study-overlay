@@ -18,7 +18,7 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
     return notFound();
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Fetch widget configuration
   const { data: widget, error: widgetError } = await supabase
