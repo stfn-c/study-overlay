@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { usersService } from '@/lib/services/users';
 import { featureRequestsService } from '@/lib/services/feature-requests';
 import { setRequestLocale } from 'next-intl/server';
+import { type Locale } from '@/i18n';
 
 // Disable caching for this page to ensure fresh widget data
 export const dynamic = 'force-dynamic';
@@ -105,7 +106,7 @@ export default async function Page({
       initialWidgets={initialWidgets}
       featureRequests={featureRequests}
       initialOnboardingProgress={onboardingProgress}
-      locale={locale}
+      locale={locale as Locale}
     />
   );
 }
