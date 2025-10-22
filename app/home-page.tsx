@@ -26,6 +26,7 @@ import { FeatureRequestList } from '@/components/feature-requests/FeatureRequest
 import { FeatureRequestWithDetails } from '@/lib/services/feature-requests';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { type Locale } from '@/i18n';
+import { useTranslations } from 'next-intl';
 
 interface HomeProps {
   host: string;
@@ -42,6 +43,7 @@ interface HomeProps {
 }
 
 export default function HomePage({ host, token, refreshToken, user, initialWidgets, featureRequests, initialOnboardingProgress, locale }: HomeProps) {
+  const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null);
@@ -665,13 +667,13 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
         <Card className="grid gap-8 p-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
             <Badge className="border-slate-200 bg-slate-100 text-[11px] uppercase tracking-[0.35em] text-slate-500">
-              Study Overlay
+              {t('common.studyOverlay')}
             </Badge>
             <h1 className="text-4xl font-semibold tracking-tight text-slate-900 md:text-[44px]">
-              Study Overlay
+              {t('home.title')}
             </h1>
             <p className="max-w-xl text-base leading-relaxed text-slate-600">
-              Clean overlays for study sessions. Generate a link, add it to OBS, and study together with accountability.
+              {t('home.subtitle')}
             </p>
             <div className="flex items-center gap-4">
               <LanguageSwitcher currentLocale={locale} />
@@ -680,7 +682,7 @@ export default function HomePage({ host, token, refreshToken, user, initialWidge
               ) : (
                 <Link href="/login">
                   <Button variant="outline" size="sm">
-                    Login to save widgets →
+                    {t('home.loginToSave')}
                   </Button>
                 </Link>
               )}
