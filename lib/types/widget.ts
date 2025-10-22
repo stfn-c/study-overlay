@@ -1,4 +1,4 @@
-export type OverlayType = 'pomodoro' | 'spotify' | 'local' | 'quote' | 'todo' | 'study-room';
+export type OverlayType = 'pomodoro' | 'spotify' | 'local' | 'quote' | 'todo' | 'study-room' | 'goals';
 
 export interface FormData {
   type: OverlayType | null;
@@ -35,6 +35,7 @@ export const overlayCopy: Record<OverlayType, string> = {
   quote: 'Daily quote',
   todo: 'Todo list',
   'study-room': 'Study room',
+  goals: 'Study goals',
 };
 
 export const overlayTag = (overlayType: OverlayType) => {
@@ -51,6 +52,8 @@ export const overlayTag = (overlayType: OverlayType) => {
       return 'Tasks';
     case 'study-room':
       return 'Social';
+    case 'goals':
+      return 'Progress';
     default:
       return 'Overlay';
   }

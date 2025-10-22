@@ -226,6 +226,127 @@ export const roomParticipants = pgTable('room_participants', {
   }),
 ])
 
+// Quote Sets table - predefined and custom quote collections
+export const quoteSets = pgTable('quote_sets', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(), // e.g., "Study Motivation", "Success Mindset"
+  description: text('description'),
+  userId: uuid('user_id'), // null for system/default sets, user ID for custom sets
+  isDefault: integer('is_default').notNull().default(0), // 1 = system default, 0 = custom
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => [
+  // RLS Policies - anyone can view default sets, users can manage their own custom sets
+  pgPolicy('anyone can view quote sets', {
+    for: 'select',
+    to: 'public',
+    using: sql`is_default = 1 OR auth.uid() = user_id`,
+  }),
+  pgPolicy('authenticated users can create custom quote sets', {
+    for: 'insert',
+    to: authenticatedRole,
+    withCheck: sql`auth.uid() = user_id AND is_default = 0`,
+  }),
+  pgPolicy('users can update own quote sets', {
+    for: 'update',
+    to: authenticatedRole,
+    using: sql`auth.uid() = user_id`,
+  }),
+  pgPolicy('users can delete own quote sets', {
+    for: 'delete',
+    to: authenticatedRole,
+    using: sql`auth.uid() = user_id`,
+  }),
+])
+
+// Quotes table - individual quotes belonging to quote sets
+export const quotes = pgTable('quotes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  quoteSetId: uuid('quote_set_id').notNull(), // References quote_sets(id)
+  text: text('text').notNull(),
+  author: text('author').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (table) => [
+  // RLS Policies - inherit access from parent quote set
+  pgPolicy('users can view quotes from accessible sets', {
+    for: 'select',
+    to: 'public',
+    using: sql`EXISTS (
+      SELECT 1 FROM quote_sets
+      WHERE quote_sets.id = quote_set_id
+      AND (quote_sets.is_default = 1 OR quote_sets.user_id = auth.uid())
+    )`,
+  }),
+  pgPolicy('users can add quotes to own sets', {
+    for: 'insert',
+    to: authenticatedRole,
+    withCheck: sql`EXISTS (
+      SELECT 1 FROM quote_sets
+      WHERE quote_sets.id = quote_set_id
+      AND quote_sets.user_id = auth.uid()
+    )`,
+  }),
+  pgPolicy('users can update quotes in own sets', {
+    for: 'update',
+    to: authenticatedRole,
+    using: sql`EXISTS (
+      SELECT 1 FROM quote_sets
+      WHERE quote_sets.id = quote_set_id
+      AND quote_sets.user_id = auth.uid()
+    )`,
+  }),
+  pgPolicy('users can delete quotes from own sets', {
+    for: 'delete',
+    to: authenticatedRole,
+    using: sql`EXISTS (
+      SELECT 1 FROM quote_sets
+      WHERE quote_sets.id = quote_set_id
+      AND quote_sets.user_id = auth.uid()
+    )`,
+  }),
+])
+
+// Study Goals table - track progress toward study objectives
+export const studyGoals = pgTable('study_goals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  widgetId: uuid('widget_id').notNull(), // References widgets(id)
+  userId: uuid('user_id').notNull(), // References auth.users(id)
+  title: text('title').notNull(), // e.g., "Read 5 chapters"
+  description: text('description'), // Optional details
+  targetValue: integer('target_value').notNull(), // e.g., 5 chapters
+  currentValue: integer('current_value').notNull().default(0), // Current progress
+  unit: text('unit').notNull(), // e.g., "chapters", "problems", "pages"
+  goalType: text('goal_type').notNull(), // 'daily' | 'weekly' | 'monthly' | 'custom'
+  startDate: timestamp('start_date', { withTimezone: true }).notNull().defaultNow(),
+  endDate: timestamp('end_date', { withTimezone: true }), // Optional deadline for custom goals
+  isCompleted: integer('is_completed').notNull().default(0), // 1 = completed, 0 = in progress
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => [
+  // RLS Policies - users can only access their own goals
+  pgPolicy('users can view own goals', {
+    for: 'select',
+    to: authenticatedRole,
+    using: sql`auth.uid() = user_id`,
+  }),
+  pgPolicy('users can insert own goals', {
+    for: 'insert',
+    to: authenticatedRole,
+    withCheck: sql`auth.uid() = user_id`,
+  }),
+  pgPolicy('users can update own goals', {
+    for: 'update',
+    to: authenticatedRole,
+    using: sql`auth.uid() = user_id`,
+  }),
+  pgPolicy('users can delete own goals', {
+    for: 'delete',
+    to: authenticatedRole,
+    using: sql`auth.uid() = user_id`,
+  }),
+])
+
 // Export types for use in your app
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
@@ -241,3 +362,9 @@ export type StudyRoom = typeof studyRooms.$inferSelect
 export type NewStudyRoom = typeof studyRooms.$inferInsert
 export type RoomParticipant = typeof roomParticipants.$inferSelect
 export type NewRoomParticipant = typeof roomParticipants.$inferInsert
+export type QuoteSet = typeof quoteSets.$inferSelect
+export type NewQuoteSet = typeof quoteSets.$inferInsert
+export type Quote = typeof quotes.$inferSelect
+export type NewQuote = typeof quotes.$inferInsert
+export type StudyGoal = typeof studyGoals.$inferSelect
+export type NewStudyGoal = typeof studyGoals.$inferInsert

@@ -230,10 +230,12 @@ export function WidgetCard({ widget, onCopyLink, onDelete, copiedLinkId }: Widge
                 className={cn(
                   'text-xs font-medium',
                   widget.type === 'pomodoro' && 'bg-purple-100 text-purple-700',
+                  widget.type === 'goals' && 'bg-indigo-100 text-indigo-700',
                   widget.type === 'spotify' && 'bg-green-100 text-green-700',
                   widget.type === 'local' && 'bg-blue-100 text-blue-700',
                   widget.type === 'quote' && 'bg-amber-100 text-amber-700',
-                  widget.type === 'todo' && 'bg-pink-100 text-pink-700'
+                  widget.type === 'todo' && 'bg-pink-100 text-pink-700',
+                  widget.type === 'study-room' && 'bg-emerald-100 text-emerald-700'
                 )}
               >
                 {overlayTag(widget.type)}
@@ -388,6 +390,22 @@ export function WidgetCard({ widget, onCopyLink, onDelete, copiedLinkId }: Widge
             </div>
           )}
 
+          {/* Goals Widget Preview */}
+          {widget.type === 'goals' && (
+            <div className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-medium text-indigo-900">Study goal progress</span>
+                  <span className="text-indigo-600 font-semibold">75%</span>
+                </div>
+                <div className="h-2 bg-indigo-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full" style={{ width: '75%' }} />
+                </div>
+                <p className="text-xs text-indigo-700">Track objectives with visual progress bars</p>
+              </div>
+            </div>
+          )}
+
           {/* Todo Widget Preview */}
           {widget.type === 'todo' && (
             <div className="p-6 bg-gradient-to-br from-pink-50 to-purple-50 rounded-lg border border-pink-200">
@@ -404,6 +422,19 @@ export function WidgetCard({ widget, onCopyLink, onDelete, copiedLinkId }: Widge
                   </div>
                   <span className="line-clamp-1 line-through opacity-60">Supports priorities & due dates</span>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Study Room Widget Preview */}
+          {widget.type === 'study-room' && (
+            <div className="p-6 bg-gradient-to-br from-emerald-50 to-green-50 rounded-lg border border-emerald-200">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs text-emerald-900">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="line-clamp-1">Study together in real-time</span>
+                </div>
+                <p className="text-xs text-emerald-700">See who's actively studying with you</p>
               </div>
             </div>
           )}

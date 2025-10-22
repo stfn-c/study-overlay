@@ -10,6 +10,7 @@ import { widgetsService } from '@/lib/services/widgets';
 import { createClient } from '@/lib/supabase/client';
 import { OverlayItem } from '@/lib/types/widget';
 import posthog from '@/instrumentation-client';
+import QuoteSetSelector from '@/components/quotes/QuoteSetSelector';
 
 interface WidgetEditClientProps {
   widget: any;
@@ -1973,6 +1974,14 @@ export default function WidgetEditClient({ widget, user, host }: WidgetEditClien
                 animate={{ opacity: 1 }}
                 className="space-y-6"
               >
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-slate-900">Quote Set</h3>
+                  <QuoteSetSelector
+                    selectedQuoteSetId={config.quoteSetId}
+                    onSelectQuoteSet={(quoteSetId) => setConfig({ ...config, quoteSetId })}
+                  />
+                </div>
+
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-slate-900">Quote Style</h3>
                   <div className="grid grid-cols-3 gap-2">

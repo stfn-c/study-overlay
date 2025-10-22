@@ -11,83 +11,107 @@ interface QuoteClientProps {
   styleSettings?: any;
 }
 
-// Curated list of motivational study quotes
-const QUOTES = [
-  { text: "The expert in anything was once a beginner.", author: "Helen Hayes" },
-  { text: "Success is the sum of small efforts repeated day in and day out.", author: "Robert Collier" },
-  { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
-  { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-  { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
-  { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
-  { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
-  { text: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar" },
-  { text: "Education is the most powerful weapon which you can use to change the world.", author: "Nelson Mandela" },
-  { text: "The beautiful thing about learning is that nobody can take it away from you.", author: "B.B. King" },
-  { text: "Strive for progress, not perfection.", author: "Unknown" },
-  { text: "The capacity to learn is a gift; the ability to learn is a skill; the willingness to learn is a choice.", author: "Brian Herbert" },
-  { text: "Don't let what you cannot do interfere with what you can do.", author: "John Wooden" },
-  { text: "Study while others are sleeping; work while others are loafing.", author: "William A. Ward" },
-  { text: "The roots of education are bitter, but the fruit is sweet.", author: "Aristotle" },
-  { text: "Learning is not attained by chance, it must be sought for with ardor and diligence.", author: "Abigail Adams" },
-  { text: "The mind is not a vessel to be filled, but a fire to be kindled.", author: "Plutarch" },
-  { text: "Live as if you were to die tomorrow. Learn as if you were to live forever.", author: "Mahatma Gandhi" },
-  { text: "An investment in knowledge pays the best interest.", author: "Benjamin Franklin" },
-  { text: "The more that you read, the more things you will know. The more that you learn, the more places you'll go.", author: "Dr. Seuss" },
-];
+interface Quote {
+  id: string;
+  text: string;
+  author: string;
+}
 
 export default function QuoteClient({ widgetId, initialQuote, initialAuthor, style = 'minimal', styleSettings: initialStyleSettings = {} }: QuoteClientProps) {
-  const [quote, setQuote] = useState(initialQuote || QUOTES[0].text);
-  const [author, setAuthor] = useState(initialAuthor || QUOTES[0].author);
+  const [quote, setQuote] = useState(initialQuote || '');
+  const [author, setAuthor] = useState(initialAuthor || '');
   const [styleConfig, setStyleConfig] = useState(style);
   const [styleSettings, setStyleSettings] = useState(initialStyleSettings);
   const [isLoading, setIsLoading] = useState(true);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
 
   const supabase = createClient();
 
   // Get quote for the day (deterministic based on date)
-  const getQuoteOfTheDay = useCallback(() => {
+  const getQuoteOfTheDay = useCallback((quotesArray: Quote[]) => {
+    if (quotesArray.length === 0) return null;
     const today = new Date();
     const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
-    const quoteIndex = dayOfYear % QUOTES.length;
-    return QUOTES[quoteIndex];
+    const quoteIndex = dayOfYear % quotesArray.length;
+    return quotesArray[quoteIndex];
   }, []);
 
   useEffect(() => {
-    if (!widgetId) {
-      const dailyQuote = getQuoteOfTheDay();
-      setQuote(dailyQuote.text);
-      setAuthor(dailyQuote.author);
-      setIsLoading(false);
-      return;
-    }
-
-    const fetchWidgetConfig = async () => {
+    const fetchQuotesAndConfig = async () => {
       try {
-        const { data, error } = await supabase
-          .from('widgets')
-          .select('config')
-          .eq('id', widgetId)
-          .single();
+        let quoteSetId: string | null = null;
 
-        if (error) throw error;
+        // Fetch widget config if widgetId is provided
+        if (widgetId) {
+          const { data: widgetData, error: widgetError } = await supabase
+            .from('widgets')
+            .select('config')
+            .eq('id', widgetId)
+            .single();
 
-        if (data?.config) {
-          setStyleConfig(data.config.quoteStyle || 'minimal');
-          setStyleSettings(data.config.quoteStyleSettings || {});
+          if (widgetError) throw widgetError;
+
+          if (widgetData?.config) {
+            setStyleConfig(widgetData.config.quoteStyle || 'minimal');
+            setStyleSettings(widgetData.config.quoteStyleSettings || {});
+            quoteSetId = widgetData.config.quoteSetId || null;
+          }
         }
 
-        const dailyQuote = getQuoteOfTheDay();
-        setQuote(dailyQuote.text);
-        setAuthor(dailyQuote.author);
+        // Fetch quotes from the selected set or default to first available set
+        let quotesData: Quote[] = [];
+
+        if (quoteSetId) {
+          // Fetch quotes from specific set
+          const { data, error } = await supabase
+            .from('quotes')
+            .select('id, text, author')
+            .eq('quote_set_id', quoteSetId);
+
+          if (error) throw error;
+          quotesData = data || [];
+        }
+
+        // If no quotes found or no set selected, get the first default set
+        if (quotesData.length === 0) {
+          const { data: quoteSets, error: setsError } = await supabase
+            .from('quote_sets')
+            .select('id')
+            .eq('is_default', 1)
+            .limit(1)
+            .single();
+
+          if (setsError) throw setsError;
+
+          if (quoteSets) {
+            const { data: defaultQuotes, error: quotesError } = await supabase
+              .from('quotes')
+              .select('id, text, author')
+              .eq('quote_set_id', quoteSets.id);
+
+            if (quotesError) throw quotesError;
+            quotesData = defaultQuotes || [];
+          }
+        }
+
+        setQuotes(quotesData);
+
+        // Set quote of the day
+        const dailyQuote = getQuoteOfTheDay(quotesData);
+        if (dailyQuote) {
+          setQuote(dailyQuote.text);
+          setAuthor(dailyQuote.author);
+        }
+
         setIsLoading(false);
       } catch (error) {
-        console.error('Failed to fetch widget config:', error);
+        console.error('Failed to fetch quotes:', error);
         setIsLoading(false);
       }
     };
 
-    fetchWidgetConfig();
-    const interval = setInterval(fetchWidgetConfig, 5000);
+    fetchQuotesAndConfig();
+    const interval = setInterval(fetchQuotesAndConfig, 5000);
     return () => clearInterval(interval);
   }, [widgetId, supabase, getQuoteOfTheDay]);
 

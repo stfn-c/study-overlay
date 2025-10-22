@@ -39,8 +39,40 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
   const [isLoading, setIsLoading] = useState(true);
   const [showCelebration, setShowCelebration] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
+  const [showPromo, setShowPromo] = useState(false);
+  const [nextPromoTime, setNextPromoTime] = useState<number | null>(null);
 
   const supabase = createClient();
+
+  // Schedule promotional message - randomly within each hour
+  useEffect(() => {
+    const scheduleNextPromo = () => {
+      // Random time between 0-3600 seconds (1 hour)
+      const randomOffset = Math.floor(Math.random() * 3600 * 1000);
+      const nextTime = Date.now() + randomOffset;
+      setNextPromoTime(nextTime);
+    };
+
+    // Schedule first promo on mount
+    if (nextPromoTime === null) {
+      scheduleNextPromo();
+    }
+
+    // Check if it's time to show promo
+    const checkPromo = setInterval(() => {
+      if (nextPromoTime && Date.now() >= nextPromoTime && !showPromo && !showCelebration) {
+        setShowPromo(true);
+        // Hide after 20 seconds
+        setTimeout(() => {
+          setShowPromo(false);
+          // Schedule next promo for the next hour
+          scheduleNextPromo();
+        }, 20000);
+      }
+    }, 1000);
+
+    return () => clearInterval(checkPromo);
+  }, [nextPromoTime, showPromo, showCelebration]);
 
   // Play ding sound
   const playDing = useCallback(() => {
@@ -309,6 +341,15 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
             alignItems: positionY < 33 ? 'flex-start' : positionY > 66 ? 'flex-end' : 'center'
           }}
         >
+          {showPromo && (
+            <div className="absolute inset-0 flex items-center justify-center z-50 animate-in fade-in duration-500">
+              <div className="text-center px-8 py-12 rounded-3xl" style={{ backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)' }}>
+                <div className="text-4xl font-bold mb-4" style={{ color: accentColor }}>Want to do this yourself?</div>
+                <div className="text-6xl font-bold text-white mb-4">ss-overlay.com</div>
+                <div className="text-3xl text-white/80">100% Free</div>
+              </div>
+            </div>
+          )}
           {showCelebration && (
             <div className="absolute inset-0 flex items-center justify-center z-50 animate-in fade-in duration-500">
               <div className="text-center">
@@ -320,14 +361,18 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
           )}
           <div
             className={layoutDirection === 'horizontal' ? 'flex items-center gap-6' : 'text-center space-y-4'}
-            style={renderBackground ? {
-              backgroundColor,
-              paddingLeft: `${paddingX}px`,
-              paddingRight: `${paddingX}px`,
-              paddingTop: `${paddingY}px`,
-              paddingBottom: `${paddingY}px`,
-              borderRadius: `${borderRadius}px`,
-            } : {}}
+            style={{
+              ...(renderBackground ? {
+                backgroundColor,
+                paddingLeft: `${paddingX}px`,
+                paddingRight: `${paddingX}px`,
+                paddingTop: `${paddingY}px`,
+                paddingBottom: `${paddingY}px`,
+                borderRadius: `${borderRadius}px`,
+              } : {}),
+              opacity: showPromo ? 0 : 1,
+              transition: 'opacity 0.5s ease'
+            }}
           >
             <div
               className="tracking-tight"
@@ -508,6 +553,16 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
             }}
           />
 
+          {showPromo && (
+            <div className="absolute inset-0 flex items-center justify-center z-50">
+              <div className="text-center px-12 py-16 rounded-3xl" style={{ background: `linear-gradient(135deg, ${color1}, ${color2})`, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+                <div className="text-5xl font-black text-white mb-6 uppercase tracking-wider">Want to do this yourself?</div>
+                <div className="text-8xl font-black text-white mb-6">ss-overlay.com</div>
+                <div className="text-4xl font-bold text-white/90">100% Free</div>
+              </div>
+            </div>
+          )}
+
           {showCelebration && (
             <div className="absolute inset-0 flex items-center justify-center z-50">
               <div className="text-center" style={{ animation: 'float 3s ease-in-out infinite' }}>
@@ -520,14 +575,18 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
 
           <div
             className={layoutDirection === 'horizontal' ? 'relative z-10 flex items-center gap-6' : 'relative z-10 text-center space-y-6'}
-            style={renderBackground ? {
-              backgroundColor,
-              paddingLeft: `${paddingX}px`,
-              paddingRight: `${paddingX}px`,
-              paddingTop: `${paddingY}px`,
-              paddingBottom: `${paddingY}px`,
-              borderRadius: `${borderRadius}px`,
-            } : {}}
+            style={{
+              ...(renderBackground ? {
+                backgroundColor,
+                paddingLeft: `${paddingX}px`,
+                paddingRight: `${paddingX}px`,
+                paddingTop: `${paddingY}px`,
+                paddingBottom: `${paddingY}px`,
+                borderRadius: `${borderRadius}px`,
+              } : {}),
+              opacity: showPromo ? 0 : 1,
+              transition: 'opacity 0.5s ease'
+            }}
           >
             <div
               className="tracking-tighter"
@@ -680,6 +739,16 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
             />
           )}
 
+          {showPromo && (
+            <div className="absolute inset-0 flex items-center justify-center z-50">
+              <div className="text-center px-10 py-14 rounded-3xl" style={{ backgroundColor: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', border: `2px solid ${glowColor}`, boxShadow: `0 0 60px ${glowColor}80` }}>
+                <div className="text-3xl font-light text-white/80 mb-6 tracking-widest uppercase">Want to do this yourself?</div>
+                <div className="text-7xl font-light text-white mb-6" style={{ textShadow: showGlow ? `0 0 40px ${glowColor}` : 'none' }}>ss-overlay.com</div>
+                <div className="text-3xl font-light text-white/70">100% Free</div>
+              </div>
+            </div>
+          )}
+
           {showCelebration && (
             <div className="absolute inset-0 flex items-center justify-center z-50">
               <div className="text-center">
@@ -692,14 +761,18 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
 
           <div
             className={layoutDirection === 'horizontal' ? 'relative z-10 flex items-center gap-6' : 'relative z-10 text-center space-y-6'}
-            style={renderBackground ? {
-              backgroundColor,
-              paddingLeft: `${paddingX}px`,
-              paddingRight: `${paddingX}px`,
-              paddingTop: `${paddingY}px`,
-              paddingBottom: `${paddingY}px`,
-              borderRadius: `${borderRadius}px`,
-            } : {}}
+            style={{
+              ...(renderBackground ? {
+                backgroundColor,
+                paddingLeft: `${paddingX}px`,
+                paddingRight: `${paddingX}px`,
+                paddingTop: `${paddingY}px`,
+                paddingBottom: `${paddingY}px`,
+                borderRadius: `${borderRadius}px`,
+              } : {}),
+              opacity: showPromo ? 0 : 1,
+              transition: 'opacity 0.5s ease'
+            }}
           >
             <div
               className="text-white tracking-wide"
@@ -835,6 +908,16 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
             alignItems: positionY < 33 ? 'flex-start' : positionY > 66 ? 'flex-end' : 'center'
           }}
         >
+          {showPromo && (
+            <div className="absolute inset-0 flex items-center justify-center z-50">
+              <div className="text-center px-12 py-16 rounded-3xl" style={{ backgroundColor: 'rgba(0,0,0,0.95)', border: `4px solid ${accentColor}`, boxShadow: showShadow ? `8px 8px 0px rgba(0,0,0,0.3)` : 'none' }}>
+                <div className="text-5xl font-black text-white mb-8 uppercase tracking-wider">Want to do this yourself?</div>
+                <div className="text-8xl font-black mb-8 tracking-tighter" style={{ color: accentColor, WebkitTextStroke: `${strokeWidth}px white`, textShadow: showShadow ? '6px 6px 0px rgba(0,0,0,0.3)' : 'none' }}>ss-overlay.com</div>
+                <div className="text-5xl font-black text-white uppercase">100% Free</div>
+              </div>
+            </div>
+          )}
+
           {showCelebration && (
             <div className="absolute inset-0 flex items-center justify-center z-50">
               <div className="text-center">
@@ -858,14 +941,18 @@ export default function PomodoroClient({ workingTime: initialWorkingTime, restTi
 
           <div
             className={layoutDirection === 'horizontal' ? 'relative z-10 flex items-center gap-8' : 'relative z-10 text-center space-y-8'}
-            style={renderBackground ? {
-              backgroundColor,
-              paddingLeft: `${paddingX}px`,
-              paddingRight: `${paddingX}px`,
-              paddingTop: `${paddingY}px`,
-              paddingBottom: `${paddingY}px`,
-              borderRadius: `${borderRadius}px`,
-            } : {}}
+            style={{
+              ...(renderBackground ? {
+                backgroundColor,
+                paddingLeft: `${paddingX}px`,
+                paddingRight: `${paddingX}px`,
+                paddingTop: `${paddingY}px`,
+                paddingBottom: `${paddingY}px`,
+                borderRadius: `${borderRadius}px`,
+              } : {}),
+              opacity: showPromo ? 0 : 1,
+              transition: 'opacity 0.5s ease'
+            }}
           >
             <div
               className="tracking-tighter"
